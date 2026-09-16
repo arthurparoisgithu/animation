@@ -13,11 +13,14 @@ primary_region = "cdg"   # Paris
   MODE_MODELE = "rejeu"
 
 [deploy]
-  # Joue avant chaque mise en ligne, sur une machine ephemere : les
-  # tables sont creees ou mises a jour, puis le catalogue est insere.
-  # Le seed est idempotent, donc le rejouer a chaque deploiement est sans
-  # risque et garde les gabarits a jour.
-  release_command = "sh -c 'alembic upgrade head && python -m scripts.seed'"
+  # Joue avant chaque mise en ligne, sur une machine ephemere :
+  #   1. les tables sont creees ou mises a jour ;
+  #   2. le catalogue est insere — le seed est idempotent, donc le rejouer
+  #      a chaque deploiement garde les gabarits a jour sans risque ;
+  #   3. les fixtures sont rejouees pour remplir la demo. Sans cette
+  #      troisieme etape, un visiteur arrive sur une application vide.
+  #      Idempotent aussi : un jeu deja en base est resservi, pas duplique.
+  release_command = "sh -c 'alembic upgrade head && python -m scripts.seed && python -m scripts.campagne --rejouer'"
 
 [http_service]
   internal_port = 8080

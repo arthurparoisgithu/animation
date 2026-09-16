@@ -122,3 +122,17 @@ def test_un_mode_inconnu_est_refuse():
 
 def test_le_dossier_par_defaut_est_a_la_racine():
     assert DOSSIER_FIXTURES.name == "fixtures"
+
+
+def test_un_dossier_de_fixtures_vide_ne_fait_pas_echouer_le_rejeu(tmp_path, monkeypatch):
+    """Un dossier vide est l'etat normal tant qu'aucune campagne n'a tourne.
+
+    C'est ce qui permet a une premiere mise en ligne de reussir avant meme
+    d'avoir enregistre quoi que ce soit : une demo vide vaut mieux qu'un
+    deploiement qui echoue.
+    """
+    from scripts import campagne
+
+    monkeypatch.setattr(campagne, "DOSSIER_FIXTURES", tmp_path)
+
+    assert campagne.lancer(enregistrer=False, avec_base=False) == 0

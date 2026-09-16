@@ -214,9 +214,12 @@ fly launch --no-deploy      # crée l'application, garde le fly.toml du dépôt
 fly deploy
 ```
 
-`fly.toml` déclare une `release_command` qui joue `alembic upgrade head` puis
-`scripts/seed.py` avant chaque mise en ligne. Le seed étant idempotent, le rejouer à
-chaque déploiement est sans risque et garde les gabarits de prompt à jour.
+`fly.toml` déclare une `release_command` qui, avant chaque mise en ligne, applique les
+migrations, insère le catalogue, puis **rejoue les fixtures pour remplir la démo**. Sans
+cette troisième étape, un visiteur arriverait sur une application vide. Les trois sont
+idempotentes : le seed met à jour les gabarits, et un jeu déjà en base est resservi plutôt
+que dupliqué. Tant qu'aucune fixture n'a été enregistrée, le rejeu sort proprement au lieu
+de faire échouer le déploiement.
 
 Deux détails qui comptent :
 
@@ -271,7 +274,7 @@ scripts/
   campagne.py        un jeu par format : enregistre les fixtures, ou les rejoue
   seed.py            insertion idempotente du catalogue
 fixtures/            réponses de modèle enregistrées (voir fixtures/README.md)
-tests/               139 tests, dont 14 contre un vrai Postgres
+tests/               140 tests, dont 14 contre un vrai Postgres
 alembic/             migrations
 ```
 

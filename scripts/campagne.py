@@ -26,7 +26,7 @@ from app import modele
 from app.catalogue import CATALOGUE
 from app.generateur import GenerationEchouee
 from app.schemas import Public
-from app.transport import FixtureIntrouvable, construire
+from app.transport import DOSSIER_FIXTURES, FixtureIntrouvable, construire
 
 # Un theme par format, choisi pour rester lisible et sans ambiguite.
 # Le public retenu est le premier de la liste du format.
@@ -50,6 +50,19 @@ NB_ITEMS = 6
 
 def lancer(*, enregistrer: bool, avec_base: bool) -> int:
     mode = "enregistrement" if enregistrer else "rejeu"
+
+    # Un dossier de fixtures vide n'est pas une erreur : c'est l'etat du
+    # projet tant qu'aucune campagne n'a tourne. On sort proprement pour
+    # que la mise en ligne reussisse quand meme — une demo vide vaut mieux
+    # qu'un deploiement qui echoue. Des fixtures presentes mais cassees,
+    # en revanche, font echouer la commande.
+    if not enregistrer and not list(DOSSIER_FIXTURES.glob("*.json")):
+        print(
+            f"Aucune fixture dans {DOSSIER_FIXTURES}/ : rien a rejouer.\n"
+            "Lancer « python -m scripts.campagne --enregistrer » pour en produire."
+        )
+        return 0
+
     modele.definir_transport(construire(mode))
     print(f"Mode : {mode}\n")
 
