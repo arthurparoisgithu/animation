@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block titre %}Taux de rejet par format{% endblock %}
+
+{% block contenu %}
+<div class="page">
+  <header class="principal">
+    <h1>Taux de rejet par format</h1>
+    <nav><a href="/">Retour</a></nav>
+  </header>
+
+  <p class="attenue">
+    Part des items produits par le modèle qui n'ont pas passé la validation.
+    Au-delà de 20 %, le format est candidat à une escalade vers Sonnet.
+  </p>
+
+  <div class="carte">
+    <table>
+      <thead>
+        <tr>
+          <th>Format</th><th>Primitive</th>
+          <th class="nombre">Retenus</th>
+          <th class="nombre">Rejets déterministes</th>
+          <th class="nombre">Rejets juge</th>
+          <th class="nombre">Taux</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ligne in metriques %}
+        <tr class="{% if ligne.escalade_conseillee %}alerte{% endif %}">
+          <td>{{ ligne.nom }}</td>
+          <td class="attenue">{{ ligne.primitive }}</td>
+          <td class="nombre">{{ ligne.items_retenus }}</td>
+          <td class="nombre">{{ ligne.rejets_deterministe }}</td>
+          <td class="nombre">{{ ligne.rejets_juge }}</td>
+          <td class="nombre">
+            {% if ligne.items_produits %}{{ "%.0f"|format(ligne.taux * 100) }} %{% else %}—{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

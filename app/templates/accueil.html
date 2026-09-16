@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block contenu %}
+<div class="page">
+  <header class="principal">
+    <h1>Générateur de jeux d'animation</h1>
+    <nav>
+      <a href="/metriques">Taux de rejet</a>
+      <a href="/docs">API</a>
+    </nav>
+  </header>
+
+  <h2>1. Filtrer le catalogue</h2>
+  <div class="carte">
+    <div class="ligne">
+      <div>
+        <label for="filtre-public">Public</label>
+        <select id="filtre-public">
+          <option value="">Tous</option>
+          {% for public in publics %}<option value="{{ public.value }}">{{ public.value }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="filtre-moment">Moment</label>
+        <select id="filtre-moment">
+          <option value="">Tous</option>
+          {% for moment in moments %}<option value="{{ moment.value }}">{{ moment.value }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="filtre-materiel">Matériel</label>
+        <select id="filtre-materiel">
+          <option value="">Tous</option>
+          {% for materiel in materiels %}<option value="{{ materiel.value }}">{{ materiel.value }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <h2>2. Choisir un format</h2>
+  <div class="grille" id="formats">
+    {% for format in formats %}
+    <button type="button" class="carte format" data-code="{{ format.code }}"
+            data-nb="{{ format.nb_items_defaut }}" aria-pressed="false">
+      <h3>{{ format.nom }}</h3>
+      <p>{{ format.regle_animateur }}</p>
+      <div class="etiquettes">
+        <span class="etiquette">{{ format.primitive }}</span>
+        <span class="etiquette">{{ format.moment }}</span>
+        <span class="etiquette">{{ format.materiel }}</span>
+      </div>
+    </button>
+    {% endfor %}
+  </div>
+
+  <h2>3. Générer</h2>
+  <form class="carte" id="formulaire">
+    <div class="ligne">
+      <div>
+        <label for="theme">Thème</label>
+        <input id="theme" name="theme" required minlength="2" placeholder="le cinéma des années 80">
+      </div>
+      <div>
+        <label for="public">Public</label>
+        <select id="public" name="public" required>
+          {% for public in publics %}<option value="{{ public.value }}">{{ public.value }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="nb_items">Nombre d'items</label>
+        <input id="nb_items" name="nb_items" type="number" min="1" max="30">
+      </div>
+      {% if code_requis %}
+      <div>
+        <label for="code">Code de génération</label>
+        <input id="code" name="code" type="password">
+      </div>
+      {% endif %}
+      <div style="flex: 0 0 auto">
+        <button type="submit" class="action" id="lancer" disabled>Générer</button>
+      </div>
+    </div>
+    <p class="message attenue" id="message">Choisis d'abord un format ci-dessus.</p>
+  </form>
+
+  <h2>Jeux enregistrés</h2>
+  <div class="grille" id="jeux">
+    {% for jeu in jeux %}
+    <a class="carte" href="/jeu/{{ jeu.id }}">
+      <h3>{{ jeu.theme }}</h3>
+      <p>{{ jeu.format_code }} · {{ jeu.public.value }} · {{ jeu.nb_items }} items{% if jeu.favori %} · ★{% endif %}</p>
+    </a>
+    {% else %}
+    <p class="attenue">Aucun jeu pour l'instant.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<script src="/static/accueil.js"></script>
+{% endblock %}

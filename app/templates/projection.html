@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block titre %}Projection — {{ jeu.theme }}{% endblock %}
+{% block corps_classe %}projection{% endblock %}
+
+{% block contenu %}
+<main class="scene" id="scene" aria-live="polite"></main>
+
+<div class="barre">
+  <span>{{ format.nom }} — {{ jeu.theme }}</span>
+  <span>
+    <kbd>←</kbd> <kbd>→</kbd> naviguer ·
+    <kbd>espace</kbd> révéler ·
+    <kbd>F</kbd> plein écran ·
+    <kbd>Échap</kbd> sortir
+  </span>
+  <span id="position"></span>
+</div>
+
+<script id="donnees" type="application/json">{{ donnees_json|safe }}</script>
+<script src="/static/projection.js"></script>
+{% endblock %}

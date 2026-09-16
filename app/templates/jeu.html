@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block titre %}{{ jeu.theme }} — {{ format.nom }}{% endblock %}
+
+{% block contenu %}
+<div class="page">
+  <header class="principal">
+    <h1>{{ format.nom }} — {{ jeu.theme }}</h1>
+    <nav>
+      <a href="/projection/{{ jeu.id }}">Mode projection</a>
+      <a href="/">Retour</a>
+    </nav>
+  </header>
+
+  <div class="carte">
+    <div class="etiquettes">
+      <span class="etiquette">{{ format.primitive.value }}</span>
+      <span class="etiquette">public : {{ jeu.public.value }}</span>
+      <span class="etiquette">{{ jeu.contenu|length }} items</span>
+      <span class="etiquette">{{ jeu.cree_le.strftime("%d/%m/%Y") }}</span>
+    </div>
+    <p class="attenue" style="margin-top:12px">{{ format.regle_animateur }}</p>
+  </div>
+
+  <h2>Contenu</h2>
+  <div class="carte">
+    <ol class="items">
+      {% for item in jeu.contenu %}
+      <li>
+        {% if format.primitive.value == "question" %}
+          <strong>{{ item.question }}</strong>
+          <ul>
+            {% for proposition in item.propositions %}
+            <li class="{% if proposition == item.bonne_reponse %}bonne{% endif %}">{{ proposition }}</li>
+            {% endfor %}
+          </ul>
+          <p class="attenue">{{ item.anecdote }}</p>
+        {% elif format.primitive.value == "enigme" %}
+          <strong>{{ item.enonce }}</strong>
+          <p class="attenue">Indice : {{ item.indice }}</p>
+          <p class="bonne">Solution : {{ item.solution }}</p>
+        {% else %}
+          <strong>{{ item.affirmation }}</strong>
+          <p class="bonne">{{ item.verdict }}</p>
+          <p class="attenue">{{ item.explication }}</p>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+</div>
+{% endblock %}
