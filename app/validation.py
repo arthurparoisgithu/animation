@@ -240,7 +240,10 @@ def valider_lot(
 
         motifs = regles(item)
         if motifs:
-            resultat.rejets.extend(MotifRejet(motif, index) for motif in motifs)
+            # Un seul rejet par item, motifs regroupes. Un item qui viole
+            # trois regles reste un item rejete : compter trois rejets
+            # fausserait le taux, qui se mesure en items et non en motifs.
+            resultat.rejets.append(MotifRejet(" ; ".join(motifs), index))
             continue
 
         resultat.items.append(item)

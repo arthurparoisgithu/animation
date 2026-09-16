@@ -18,9 +18,13 @@ _SQL_FORMATS = """
 SELECT code, nom, primitive, publics, moment, materiel,
        regle_animateur, nb_items_defaut
 FROM format_jeu
-WHERE (:public   IS NULL OR publics @> ARRAY[:public]::text[])
-  AND (:moment   IS NULL OR moment   = :moment)
-  AND (:materiel IS NULL OR materiel = :materiel)
+-- Deux raisons a ces CAST. Sans type explicite, Postgres ne peut pas
+-- deduire celui du parametre a partir du seul « IS NULL ». Et la syntaxe
+-- courte « :public::text » est illisible pour SQLAlchemy, qui y voit un
+-- nom de parametre et non un cast : CAST(... AS ...) leve l'ambiguite.
+WHERE (CAST(:public AS text)   IS NULL OR publics @> ARRAY[CAST(:public AS text)])
+  AND (CAST(:moment AS text)   IS NULL OR CAST(moment AS text)   = CAST(:moment AS text))
+  AND (CAST(:materiel AS text) IS NULL OR CAST(materiel AS text) = CAST(:materiel AS text))
 ORDER BY nom
 """
 

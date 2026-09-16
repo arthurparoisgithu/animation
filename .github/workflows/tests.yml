@@ -9,6 +9,27 @@ jobs:
   pytest:
     runs-on: ubuntu-latest
 
+    # Les tests de validation tournent sans rien, mais ceux de l'API ont
+    # besoin d'un vrai Postgres : les tableaux, le jsonb et l'operateur de
+    # contenance ne s'emulent pas en SQLite.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: animation
+          POSTGRES_PASSWORD: animation
+          POSTGRES_DB: animation
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql+psycopg://animation:animation@localhost:5432/animation
+
     steps:
       - uses: actions/checkout@v4
 
@@ -22,7 +43,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Appliquer les migrations
+        run: alembic upgrade head
+
       - name: Lancer les tests
-        # La suite ne touche ni au reseau ni a la base : aucune cle d'API
-        # n'est necessaire pour la faire tourner ici.
+        # Aucun secret n'est necessaire : l'appel au modele est simule dans
+        # les tests, donc aucune cle d'API ne circule dans la CI.
         run: pytest

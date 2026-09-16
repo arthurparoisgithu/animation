@@ -76,10 +76,12 @@ def generer(
     max_tentatives = reglages().max_tentatives
 
     for tentative in range(1, max_tentatives + 1):
-        resultat.tentatives = tentative
         manquants = nb_items - len(resultat.items)
         if manquants <= 0:
             break
+        # Apres le test de sortie, sinon le compteur rapporte une tentative
+        # de trop : celle ou l'on a constate qu'il n'y avait plus rien a faire.
+        resultat.tentatives = tentative
 
         prompt = construire_prompt(
             gabarit,
