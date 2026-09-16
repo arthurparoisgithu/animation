@@ -494,3 +494,99 @@ au navigateur, à l'écran, en aperçu d'impression et en PDF.
   écrites à la main. La contrainte qui m'inquiète est l'énoncé à 200 caractères, qui doit
   désormais porter une phrase de récit **et** l'énigme. Si le taux de rejet dépasse 20 %
   sur ce format, la limite est à revoir — pas le modèle à escalader.
+
+---
+
+## Session 7 — rendre le projet lançable par quelqu'un d'autre
+
+Le projet tournait chez moi. C'est un test faible : la machine où on a tout installé finit
+toujours par marcher. La vraie question, c'est ce que voit quelqu'un qui clone le dépôt —
+un recruteur, un formateur — et ce qu'il doit faire avant de voir la première page.
+
+Avant cette session, la réponse était : installer Python, créer un environnement virtuel,
+installer PostgreSQL, créer une base, migrer, seeder, lancer uvicorn. Sept étapes, dont
+une — PostgreSQL — qui rebute n'importe qui n'ayant jamais installé une base.
+
+### Ce que j'ai ajouté
+
+Un `docker-compose.yml` : la base et l'application câblées ensemble, plus trois fichiers
+`.bat` pour Windows qui font la même chose en double-clic. Le seul prérequis devient
+Docker Desktop.
+
+Trois décisions valent d'être notées :
+
+- **Le volume Postgres est nommé et conservé.** `arreter.bat` fait `docker compose down`
+  sans `-v`. Sans volume, chaque arrêt viderait la base — donc effacerait des jeux qui ont
+  été **payés**. Un redémarrage ne doit pas coûter de l'argent.
+- **`depends_on` attend la santé de la base, pas son démarrage.** Un conteneur Postgres est
+  « lancé » bien avant d'accepter une connexion. Migrer contre une base qui démarre encore
+  échoue une fois sur deux, et de façon intermittente — donc pénible à diagnostiquer.
+- **`demarrer.bat` boucle au lieu de demander de relancer.** Première version : il créait le
+  `.env`, disait « colle ta clé puis relance ». Deux double-clics. Comme `notepad` bloque le
+  script tant que la fenêtre est ouverte, il suffit de revenir vérifier après fermeture. Un
+  seul double-clic, et la boucle recommence tant que la clé n'est pas collée.
+
+### Le piège que j'ai failli laisser passer
+
+Le `.env` contient `DATABASE_URL=...@localhost:5432`. Dans un conteneur, `localhost`
+désigne **le conteneur lui-même**, pas la base. Le compose impose donc sa propre valeur,
+qui pointe sur `base`.
+
+Sauf que ça ne marche que si la variable d'environnement l'emporte sur le fichier `.env`.
+J'étais à peu près sûr que pydantic-settings fonctionne dans cet ordre — mais « à peu près
+sûr » sur l'hypothèse centrale d'un fichier que quelqu'un d'autre va lancer, ça ne va pas.
+Je l'ai vérifié : même `Reglages`, une fois sans variable, une fois avec, et la variable
+gagne. Trente secondes pour transformer une croyance en fait.
+
+### Fins de ligne
+
+Les `.bat` écrits sous Linux sortaient en LF. Sous `cmd.exe`, les étiquettes de saut se
+lisent mal et `goto` part dans le vide — et le message d'erreur ne dit rien d'utile. Deux
+protections : conversion en CRLF, et un `.gitattributes` avec `*.bat text eol=crlf`, pour
+que ça reste vrai après un clone.
+
+Et ce `.gitattributes`, je l'avais écrit faux du premier coup :
+
+```
+*.bat text eol=crlf
+*     text=auto eol=lf     <- cette ligne annulait la precedente
+```
+
+Dans un `.gitattributes`, **c'est la dernière règle qui correspond qui l'emporte**, pas la
+plus spécifique. Ma règle générale, placée en dessous, écrasait celle des `.bat`. Aucun
+message, aucun test rouge : `git check-attr eol -- demarrer.bat` répondait `lf` et c'était
+tout. J'ai inversé les deux lignes, et vérifié en supprimant le fichier puis en le
+récupérant avec `git checkout` — il revient bien en CRLF.
+
+J'ai aussi retiré tous les caractères accentués des `.bat`. La console Windows a son propre
+encodage, et un `chcp 65001` ne suffit pas partout. Les trois fichiers sont en ASCII pur :
+il n'y a plus rien à encoder, donc plus rien à casser.
+
+### Ce que je n'ai pas pu vérifier
+
+**La pile Docker n'a pas été lancée de bout en bout.** L'environnement où j'ai travaillé
+bloque l'accès au CDN des images Docker, donc ni `postgres:16` ni `python:3.11-slim` n'ont
+pu être téléchargés. Ce qui est vérifié : le fichier compose est valide (`docker compose
+config`), la précédence des variables d'environnement, et la chaîne de démarrage
+`alembic upgrade head && scripts.seed` jouée trois fois de suite contre un vrai Postgres —
+elle est idempotente, ce qui compte puisqu'elle tourne à chaque démarrage.
+
+Ce qui reste à prouver, c'est l'assemblage : la construction de l'image et le câblage des
+deux services. À faire au premier `demarrer.bat` sur ma machine.
+
+### Ce que je retiens
+
+« Ça marche chez moi » n'est pas une propriété du code, c'est une propriété de ma machine.
+Écrire le chemin d'installation oblige à voir tout ce qu'on a installé sans le noter.
+
+### Vérifications faites
+
+150 tests toujours verts. `docker compose config` valide. Précédence variable
+d'environnement / `.env` vérifiée explicitement. Migration + seed rejoués trois fois de
+suite sur une base neuve, puis déjà migrée : 11 formats à chaque passe, aucun doublon. Les
+trois `.bat` sont en ASCII pur et en CRLF, et chaque `goto` a bien son étiquette.
+
+### Reste à faire
+
+- Lancer `demarrer.bat` une fois pour de vrai : c'est la seule étape non vérifiée.
+- Faire tourner `escape_game` contre Haiku et regarder son taux de rejet (voir session 6).

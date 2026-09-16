@@ -1,0 +1,11 @@
+# Regle generale d'abord : dans un .gitattributes, c'est la DERNIERE regle
+# qui correspond qui l'emporte. Placee apres, la ligne « * » ecraserait la
+# regle des .bat — et le piege est silencieux, « git check-attr » est le
+# seul moyen de le voir.
+* text=auto eol=lf
+
+# Les scripts Windows doivent arriver en CRLF dans la copie de travail,
+# meme clones depuis Linux ou macOS. Avec des fins de ligne Unix, cmd.exe
+# lit mal les etiquettes de saut et « goto » part dans le vide, sans
+# message d'erreur exploitable.
+*.bat text eol=crlf

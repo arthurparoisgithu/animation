@@ -141,6 +141,33 @@ Pas de front Next.js : l'objet de la démonstration ici est le back-end Python.
 
 ## Lancer le projet
 
+### Le plus simple : Docker
+
+Une base Postgres et l'application, câblées ensemble. Rien à installer d'autre que
+[Docker Desktop](https://www.docker.com/products/docker-desktop/) — ni Python, ni
+PostgreSQL.
+
+```bash
+git clone https://github.com/arthurparoisgithu/animation.git
+cd animation
+cp .env.example .env     # puis y coller la clé d'API
+docker compose up
+```
+
+L'application répond sur <http://localhost:8000>. Les tables sont créées et le catalogue
+inséré à chaque démarrage : le seed est idempotent, le rejouer est sans risque. Les jeux
+générés survivent aux redémarrages — ils sont dans un volume Docker, et ils ont été payés.
+
+**Sous Windows**, trois fichiers évitent la ligne de commande :
+
+| Fichier | Ce qu'il fait |
+|---|---|
+| `demarrer.bat` | Vérifie Docker, crée le `.env` et l'ouvre s'il manque la clé, démarre, ouvre le navigateur. |
+| `arreter.bat` | Arrête tout, en conservant les jeux déjà générés. |
+| `journal.bat` | Affiche les messages de l'application, à copier en cas de problème. |
+
+### À la main, sans Docker
+
 ```bash
 git clone https://github.com/arthurparoisgithu/animation.git
 cd animation
@@ -157,7 +184,7 @@ Une base Postgres est nécessaire :
 ```bash
 createdb animation
 alembic upgrade head               # crée les trois tables
-python -m scripts.seed             # insère les dix formats du catalogue
+python -m scripts.seed             # insère les onze formats du catalogue
 ```
 
 Puis :
@@ -305,7 +332,7 @@ app/
   schemas.py         les trois primitives en Pydantic, et les énumérations du catalogue
   validation.py      niveau 1 : les règles déterministes, fonctions pures
   gabarits.py        un gabarit de prompt par primitive
-  catalogue.py       les dix formats de départ, source de vérité du seed
+  catalogue.py       les onze formats du catalogue, source de vérité du seed
   transport.py       la couture : appel réel, enregistré, ou rejoué depuis fixtures/
   modele.py          appel Anthropic et extraction du JSON — tout le réseau est ici
   juge.py            niveau 2 : exactitude factuelle et adéquation au public
@@ -319,7 +346,9 @@ scripts/
   campagne.py        un jeu par format : enregistre les fixtures, ou les rejoue
   seed.py            insertion idempotente du catalogue
 fixtures/            réponses de modèle enregistrées (voir fixtures/README.md)
-tests/               146 tests, dont 17 contre un vrai Postgres
+docker-compose.yml   la base et l'application, câblées ensemble
+demarrer.bat         démarrage en double-clic sous Windows (+ arreter, journal)
+tests/               150 tests, dont 19 contre un vrai Postgres
 alembic/             migrations
 ```
 

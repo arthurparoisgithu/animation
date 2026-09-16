@@ -1,0 +1,62 @@
+# Demarrage en une commande : une base Postgres et l'application, cablees
+# ensemble. C'est ce qui permet de faire tourner le projet sans installer
+# Python ni Postgres sur la machine — seul Docker est requis.
+#
+#   docker compose up
+#
+# Sous Windows, demarrer.bat fait la meme chose en double-clic.
+
+services:
+  base:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: animation
+      POSTGRES_PASSWORD: animation
+      POSTGRES_DB: animation
+    # Le volume garde les jeux generes d'un demarrage a l'autre. Sans lui,
+    # chaque « docker compose down » reviendrait a une base vide et les
+    # generations deja payees seraient perdues.
+    volumes:
+      - donnees_postgres:/var/lib/postgresql/data
+    healthcheck:
+      # -U animation est indispensable : sans utilisateur explicite,
+      # pg_isready reprend celui du systeme, qui n'existe pas en base, et
+      # le service n'est jamais declare sain.
+      test: ["CMD-SHELL", "pg_isready -U animation -d animation"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: .
+    # La cle d'API et le code de generation viennent de .env, qui n'entre
+    # jamais dans l'image : le .dockerignore l'exclut, et compose l'injecte
+    # ici comme variables d'environnement.
+    env_file:
+      - .env
+    environment:
+      # Ecrase la valeur de .env : dans le reseau de compose, la base ne
+      # s'appelle pas « localhost » mais « base ». C'est l'erreur numero un
+      # quand on passe d'une installation locale a des conteneurs.
+      DATABASE_URL: postgresql+psycopg://animation:animation@base:5432/animation
+      PORT: 8080
+    depends_on:
+      base:
+        # Attend que Postgres reponde vraiment, pas seulement que le
+        # conteneur soit lance : migrer contre une base qui demarre encore
+        # echoue une fois sur deux.
+        condition: service_healthy
+    ports:
+      # 8000 sur la machine, 8080 dans le conteneur. L'application s'ouvre
+      # donc sur http://localhost:8000
+      - "8000:8080"
+    # Les trois etapes du demarrage, dans l'ordre : creer les tables,
+    # inserer le catalogue (le seed est idempotent, le rejouer est sans
+    # risque), puis servir. Un utilisateur n'a aucune commande a retenir.
+    command: >
+      sh -c "alembic upgrade head
+      && python -m scripts.seed
+      && uvicorn app.main:app --host 0.0.0.0 --port 8080"
+
+volumes:
+  donnees_postgres:
