@@ -224,3 +224,68 @@ rejeu**, résultats identiques au format près. Puis la campagne contre une vrai
 - [ ] Regarder les taux de rejet obtenus et ajuster les gabarits en conséquence.
 - [ ] Mettre en ligne en `MODE_MODELE=rejeu`, et obtenir un lien à mettre dans le
       dossier de candidature.
+
+---
+
+## Session 3 — préparation du déploiement
+
+### Ce qui a été fait
+
+`Dockerfile` et `fly.toml` : le déploiement est décrit par des fichiers versionnés, pas
+par une suite de clics dans une interface. La `release_command` joue les migrations puis
+le seed avant chaque mise en ligne.
+
+### Trois bugs trouvés en préparant le déploiement
+
+Aucun n'était visible en développement. Les trois ne se déclenchent qu'en conditions
+réelles d'hébergement — c'est la leçon de cette session.
+
+**1. `postgres://` contre `postgresql+psycopg://`.** Fly, Render et Heroku créent une
+variable `DATABASE_URL` commençant par `postgres://`. SQLAlchemy 2 exige un pilote
+explicite et refuse cette forme. Deux options : demander à l'utilisateur de définir une
+variable différente de celle que l'hébergeur crée tout seul, ou réécrire l'URL. J'ai
+choisi de réécrire — c'est l'application qui s'adapte à l'hébergeur, pas l'inverse.
+
+**2. Le `%` qui faisait échouer la migration.** Celui-là m'a coûté du temps et il est
+instructif. `alembic/env.py` écrivait l'URL dans la configuration Alembic via
+`config.set_main_option()`. Or cette configuration passe par `configparser`, qui traite
+`%` comme une syntaxe d'interpolation. Un mot de passe contenant un `%` — et les
+hébergeurs en génèrent — faisait donc planter la migration **avant même la tentative de
+connexion**, avec un message parlant d'interpolation qui ne suggère rien de ce qui se
+passe vraiment.
+
+Corrigé en construisant le moteur directement, sans passer par `configparser`. Et pour
+que le cas reste couvert, **la CI utilise maintenant un mot de passe contenant un `%`**
+(`anim%pass`, encodé `anim%25pass` dans l'URI). J'ai vérifié les deux sens : cette URL
+fait bien échouer l'ancien code, et passe avec le nouveau. Un garde-fou qu'on n'a pas vu
+échouer ne garde rien.
+
+**3. Mon conftest ignorait silencieusement quatorze tests.** En lançant la suite avec une
+URL au format hébergeur, j'ai vu « 125 passed, 14 skipped » alors que la base tournait.
+`_base_joignable()` construisait le moteur sans passer par la normalisation de
+`Reglages` : la connexion échouait, l'exception était avalée, et les tests de base
+étaient ignorés sans un mot.
+
+Deux corrections. La normalisation, d'abord. Mais surtout le **changement de
+sémantique** : on n'ignore plus que si `DATABASE_URL` n'est pas définie du tout. Si elle
+est définie et que la base ne répond pas, l'erreur remonte. Une variable renseignée qui
+ne marche pas est un problème à signaler, pas à contourner.
+
+C'est la troisième fois dans ce projet que je tombe sur la même famille de problème : du
+code qui passe pour une mauvaise raison. Le `python -m pytest` de la CI, le repli
+silencieux vers l'API si une fixture manque, et maintenant ce skip. À chaque fois, le
+correctif consiste à **rendre l'échec bruyant plutôt que confortable**.
+
+### Ce que je n'ai pas pu vérifier
+
+L'image Docker n'a pas été construite : le registre Docker Hub est bloqué par la
+politique réseau de l'environnement où je travaille. J'ai validé tout le reste — le
+`fly.toml` se parse, chaque chemin `COPY` existe, la `release_command` et la commande de
+démarrage tournent réellement contre Postgres avec une URL au format Fly. Le `docker
+build` reste à faire au premier déploiement.
+
+### Vérifications faites
+
+139 tests passent avec base, 125 sans. La commande de release crée les trois tables et
+insère les dix formats. Le serveur répond sur le port 8080 : `/sante` pour le check de
+Fly, l'accueil, le catalogue filtré, et un 503 lisible pour un thème absent des fixtures.

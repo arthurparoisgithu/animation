@@ -7,6 +7,7 @@ dans le code : elle arrive par .env, qui est exclu du depot.
 
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -40,6 +41,22 @@ class Reglages(BaseSettings):
     # Si renseigne, la generation reelle exige ce code. La demo publique peut
     # alors afficher les jeux deja en base sans que ma cle paie pour les visiteurs.
     code_generation: str = ""
+
+
+    @field_validator("database_url")
+    @classmethod
+    def _pilote_explicite(cls, valeur: str) -> str:
+        """Ajoute le pilote a l'URL fournie par l'hebergeur.
+
+        Fly.io, Render et Heroku exposent « postgres://… ». SQLAlchemy 2
+        exige un pilote explicite et refuse cette forme. On la reecrit
+        plutot que de demander une variable d'environnement differente de
+        celle que l'hebergeur cree tout seul.
+        """
+        for prefixe in ("postgres://", "postgresql://"):
+            if valeur.startswith(prefixe):
+                return "postgresql+psycopg://" + valeur[len(prefixe):]
+        return valeur
 
 
 @lru_cache

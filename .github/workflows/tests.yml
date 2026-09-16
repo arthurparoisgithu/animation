@@ -17,7 +17,11 @@ jobs:
         image: postgres:16
         env:
           POSTGRES_USER: animation
-          POSTGRES_PASSWORD: animation
+          # Le « % » est deliberé. Les hebergeurs generent des mots de passe
+          # aleatoires qui en contiennent, et un « % » dans l'URL faisait
+          # echouer la migration avant meme la connexion. La CI joue donc le
+          # cas reel plutot que le cas facile.
+          POSTGRES_PASSWORD: anim%pass
           POSTGRES_DB: animation
         ports:
           - 5432:5432
@@ -32,7 +36,8 @@ jobs:
           --health-retries 5
 
     env:
-      DATABASE_URL: postgresql+psycopg://animation:animation@localhost:5432/animation
+      # Mot de passe encode selon la norme des URI : %25 vaut « % ».
+      DATABASE_URL: postgresql+psycopg://animation:anim%25pass@localhost:5432/animation
 
     steps:
       - uses: actions/checkout@v4

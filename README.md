@@ -201,6 +201,39 @@ nécessaire : aucune clé d'API ne circule dans la CI.
 
 ---
 
+## Mise en ligne
+
+La démo publique tourne en `MODE_MODELE=rejeu` : elle rejoue les générations
+enregistrées dans `fixtures/`. Un visiteur voit donc toute l'application et de vraies
+sorties de modèle, **sans qu'un seul appel soit facturé**.
+
+Le déploiement est décrit par deux fichiers versionnés : `Dockerfile` et `fly.toml`.
+
+```bash
+fly launch --no-deploy      # crée l'application, garde le fly.toml du dépôt
+fly deploy
+```
+
+`fly.toml` déclare une `release_command` qui joue `alembic upgrade head` puis
+`scripts/seed.py` avant chaque mise en ligne. Le seed étant idempotent, le rejouer à
+chaque déploiement est sans risque et garde les gabarits de prompt à jour.
+
+Deux détails qui comptent :
+
+- **Les hébergeurs fournissent `DATABASE_URL` sous la forme `postgres://…`.** SQLAlchemy 2
+  exige un pilote explicite et refuse cette forme, donc la configuration la réécrit en
+  `postgresql+psycopg://` plutôt que d'exiger une variable différente de celle que
+  l'hébergeur crée tout seul.
+- **Un `%` dans le mot de passe généré faisait échouer la migration**, avant même la
+  connexion : Alembic passait l'URL par `configparser`, qui y voyait une interpolation.
+  Le moteur est maintenant construit directement. La CI utilise délibérément un mot de
+  passe contenant un `%` pour que ce cas reste couvert.
+
+La machine dort quand personne ne consulte la démo (`auto_stop_machines`), et redémarre
+à la première requête.
+
+---
+
 ## L'interface
 
 Le catalogue se filtre par public, moment de la journée et matériel disponible — ce sont
@@ -238,7 +271,7 @@ scripts/
   campagne.py        un jeu par format : enregistre les fixtures, ou les rejoue
   seed.py            insertion idempotente du catalogue
 fixtures/            réponses de modèle enregistrées (voir fixtures/README.md)
-tests/               133 tests, dont 14 contre un vrai Postgres
+tests/               139 tests, dont 14 contre un vrai Postgres
 alembic/             migrations
 ```
 

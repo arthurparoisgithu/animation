@@ -1,0 +1,46 @@
+# Configuration Fly.io.
+# « app » doit correspondre au nom cree par « fly launch » — remplace-le
+# si tu en choisis un autre.
+app = "generateur-jeux-animation"
+primary_region = "cdg"   # Paris
+
+[build]
+
+[env]
+  # La demo publique rejoue des generations deja enregistrees dans
+  # fixtures/ : elle montre de vraies sorties de modele sans qu'un seul
+  # appel soit facture.
+  MODE_MODELE = "rejeu"
+
+[deploy]
+  # Joue avant chaque mise en ligne, sur une machine ephemere : les
+  # tables sont creees ou mises a jour, puis le catalogue est insere.
+  # Le seed est idempotent, donc le rejouer a chaque deploiement est sans
+  # risque et garde les gabarits a jour.
+  release_command = "sh -c 'alembic upgrade head && python -m scripts.seed'"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # La demo peut dormir quand personne ne la consulte : pas de machine
+  # facturee en continu. Le premier visiteur attend une seconde de plus.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.http_options]
+    h2_backend = false
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+
+[checks]
+  [checks.sante]
+    type = "http"
+    port = 8080
+    method = "GET"
+    path = "/sante"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"

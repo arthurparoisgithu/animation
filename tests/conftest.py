@@ -14,21 +14,33 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
 
 def _base_joignable() -> bool:
+    """Teste la connexion en passant par la meme normalisation que l'app.
+
+    Sans passer par Reglages, une URL « postgres://… » — celle que
+    fournissent les hebergeurs — echouerait ici et ferait silencieusement
+    ignorer les quatorze tests de base.
+
+    Si DATABASE_URL est definie mais que la base ne repond pas, on laisse
+    l'erreur remonter : une variable renseignee qui ne marche pas est un
+    probleme a signaler, pas a contourner. On n'ignore que le cas ou
+    aucune base n'a ete configuree du tout.
+    """
     if not DATABASE_URL:
         return False
-    try:
-        from sqlalchemy import create_engine, text
 
-        moteur = create_engine(DATABASE_URL)
-        with moteur.connect() as connexion:
-            connexion.execute(text("select 1"))
-        return True
-    except Exception:
-        return False
+    from sqlalchemy import create_engine, text
+
+    from app.config import Reglages
+
+    moteur = create_engine(Reglages(database_url=DATABASE_URL).database_url)
+    with moteur.connect() as connexion:
+        connexion.execute(text("select 1"))
+    return True
 
 
 base_requise = pytest.mark.skipif(
-    not _base_joignable(), reason="aucune base Postgres joignable via DATABASE_URL"
+    not _base_joignable(),
+    reason="DATABASE_URL non definie : tests de base ignores",
 )
 
 
