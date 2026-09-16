@@ -83,6 +83,28 @@ c'est SQLAlchemy qui se plaint, parce qu'il lit `:public::text` comme un nom de 
 et non comme un cast. Solution : `CAST(:public AS text)`, qui n'a aucune des deux
 ambiguïtés.
 
+**6. La CI est tombée deux fois, pour deux raisons que le local ne pouvait pas montrer.**
+
+D'abord `FATAL: role "root" does not exist`, répété trois fois. Le *health check* du
+service Postgres, `pg_isready` sans argument, reprend l'utilisateur du système — `root` sur
+le runner — qui n'existe pas en base. Le service n'était donc jamais déclaré sain et le job
+s'arrêtait avant d'installer quoi que ce soit : aucun test n'avait tourné. Corrigé avec
+`pg_isready -U animation -d animation`.
+
+En écrivant ce correctif j'ai failli mettre un commentaire `#` à l'intérieur du bloc `>-`
+des options YAML. Dans un bloc scalaire, `#` n'est pas un commentaire : il serait entré
+dans la chaîne passée à Docker.
+
+Ensuite `ModuleNotFoundError: No module named 'app'`, sur les huit modules de test.
+C'était une erreur de méthode de ma part : je lançais `python -m pytest` en local, et le
+`-m` ajoute le dossier courant au `sys.path`. La CI lance `pytest` tout court, qui ne le
+fait pas. Le projet marchait donc chez moi pour une raison qui n'existait pas sur le
+runner.
+
+Corrigé par `pythonpath = .` dans `pytest.ini`, et surtout : **désormais je vérifie avec
+la commande exacte de la CI**, pas avec une variante qui m'arrange. J'ai reproduit
+l'échec en retirant la ligne, puis vérifié qu'il disparaissait en la remettant.
+
 ### Décisions prises en cours de route
 
 - **Alembic plutôt qu'un simple `create_all()`.** La migration initiale est écrite à la
