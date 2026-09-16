@@ -49,3 +49,21 @@ def test_le_gabarit_des_dingbats_precise_que_l_enonce_est_affichable():
     format_jeu = next(f for f in CATALOGUE if f["code"] == "dingbats")
     gabarit = gabarit_du_format(format_jeu["code"], format_jeu["primitive"])
     assert "emojis" in gabarit
+
+
+def test_tous_les_gabarits_sont_en_francais_accentue():
+    """Les prompts partent vers le modele : autant qu'ils soient en bon francais.
+
+    Le gabarit du juge avait ete oublie lors du passage aux accents, et
+    rien ne s'en plaignait.
+    """
+    from app.juge import GABARIT_JUGE
+
+    accentues = set("àâäéèêëîïôöùûüç")
+    for nom, gabarit in [
+        ("question", GABARIT_PAR_PRIMITIVE[Primitive.question]),
+        ("enigme", GABARIT_PAR_PRIMITIVE[Primitive.enigme]),
+        ("vrai_faux", GABARIT_PAR_PRIMITIVE[Primitive.vrai_faux]),
+        ("juge", GABARIT_JUGE),
+    ]:
+        assert accentues & set(gabarit.lower()), f"gabarit {nom} sans aucun accent"

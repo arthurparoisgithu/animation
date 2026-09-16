@@ -85,7 +85,7 @@ def main() -> int:
             avec_juge=not arguments.sans_juge,
         )
     except GenerationEchouee as erreur:
-        print(f"\nEchec : {erreur}", file=sys.stderr)
+        print(f"\nÉchec : {erreur}", file=sys.stderr)
         for rejet in erreur.rejets:
             print(f"  [{rejet.niveau.value}] {rejet.motif}", file=sys.stderr)
         return 1

@@ -163,7 +163,8 @@ isole donc **une seule couture** — `app/transport.py` — et la branche de tro
 
 ```bash
 # Une seule fois, avec une clé d'API : c'est la seule commande qui coûte.
-python -m scripts.campagne --enregistrer
+# --sans-base évite d'avoir à installer PostgreSQL juste pour ça.
+python -m scripts.campagne --enregistrer --sans-base
 
 # Ensuite, autant de fois qu'on veut, gratuitement.
 python -m scripts.campagne --rejouer
@@ -281,7 +282,7 @@ scripts/
   campagne.py        un jeu par format : enregistre les fixtures, ou les rejoue
   seed.py            insertion idempotente du catalogue
 fixtures/            réponses de modèle enregistrées (voir fixtures/README.md)
-tests/               145 tests, dont 17 contre un vrai Postgres
+tests/               146 tests, dont 17 contre un vrai Postgres
 alembic/             migrations
 ```
 

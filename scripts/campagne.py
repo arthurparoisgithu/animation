@@ -58,7 +58,7 @@ def lancer(*, enregistrer: bool, avec_base: bool) -> int:
     # en revanche, font echouer la commande.
     if not enregistrer and not list(DOSSIER_FIXTURES.glob("*.json")):
         print(
-            f"Aucune fixture dans {DOSSIER_FIXTURES}/ : rien a rejouer.\n"
+            f"Aucune fixture dans {DOSSIER_FIXTURES}/ : rien à rejouer.\n"
             "Lancer « python -m scripts.campagne --enregistrer » pour en produire."
         )
         return 0
@@ -99,7 +99,7 @@ def lancer(*, enregistrer: bool, avec_base: bool) -> int:
                         nb_items=NB_ITEMS,
                     )
                 except (GenerationEchouee, FixtureIntrouvable) as erreur:
-                    print(f"echec : {erreur}")
+                    print(f"échec : {erreur}")
                     echecs += 1
                     continue
                 print(f"{len(resultat.items)} items, {len(resultat.rejets)} rejets")
@@ -118,20 +118,21 @@ def lancer(*, enregistrer: bool, avec_base: bool) -> int:
                     reutiliser=not enregistrer,
                 )
             except (GenerationEchouee, FixtureIntrouvable) as erreur:
-                print(f"echec : {erreur}")
+                print(f"échec : {erreur}")
                 echecs += 1
                 continue
 
-            etat = "resservi" if resservi else "genere"
+            etat = "resservi" if resservi else "généré"
             print(f"{len(jeu.contenu)} items ({etat})")
             succes += 1
     finally:
         if session is not None:
             session.close()
 
-    print(f"\n{succes} formats traites, {echecs} echecs.")
+    print(f"\n{succes} formats traités, {echecs} échec(s).")
     if enregistrer:
-        print("Fixtures ecrites dans fixtures/. Pense a les committer.")
+        print("Fixtures écrites dans fixtures/. Pense à les committer :")
+        print("  git add fixtures/ && git commit -m \"Enregistre les fixtures\" && git push")
     return 0 if echecs == 0 else 1
 
 

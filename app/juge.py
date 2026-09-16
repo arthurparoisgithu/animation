@@ -13,23 +13,23 @@ from app.modele import SortieIllisible, appeler, extraire_json
 from app.schemas import Primitive
 from app.validation import MotifRejet, Resultat
 
-GABARIT_JUGE = """Tu controles la qualite d'items destines a un jeu d'animation.
-Theme annonce : {theme}. Public vise : {public}.
+GABARIT_JUGE = """Tu contrôles la qualité d'items destinés à un jeu d'animation.
+Thème annoncé : {theme}. Public visé : {public}.
 
-Tu ne juges que deux choses, le reste a deja ete verifie par ailleurs :
-1. exactitude factuelle : toute affirmation ou reponse fausse est rejetee ;
-2. adequation au public : niveau de difficulte, vocabulaire, et contenu approprie a ce public.
+Tu ne juges que deux choses, le reste a déjà été vérifié par ailleurs :
+1. exactitude factuelle : toute affirmation ou réponse fausse est rejetée ;
+2. adéquation au public : niveau de difficulté, vocabulaire, et contenu approprié à ce public.
 
-Tu ne juges ni la mise en forme, ni la longueur, ni la presence des champs.
-En cas de doute serieux sur un fait, rejette.
+Tu ne juges ni la mise en forme, ni la longueur, ni la présence des champs.
+En cas de doute sérieux sur un fait, rejette.
 
-Items a controler :
+Items à contrôler :
 {items}
 
-Reponds uniquement par un tableau JSON d'objets {index, verdict, motif} :
-- index est le numero de l'item tel qu'il apparait ci-dessus ;
+Réponds uniquement par un tableau JSON d'objets {index, verdict, motif} :
+- index est le numéro de l'item tel qu'il apparaît ci-dessus ;
 - verdict vaut exactement "accepte" ou "rejete" ;
-- motif est vide si accepte, sinon une phrase courte disant ce qui ne va pas.
+- motif est vide si accepté, sinon une phrase courte disant ce qui ne va pas.
 Un objet par item, aucun texte autour, aucune balise de code."""
 
 
