@@ -392,3 +392,105 @@ de Python. Ce qui se configure mérite donc autant de vérification que ce qui s
 
 145 tests passent (17 contre Postgres). Captures régénérées, interface repassée au
 navigateur : navigation clavier, révélation, filtrage, aucune erreur console.
+
+---
+
+## Session 6 — le contre-exemple, et ce qu'on en tire
+
+Point de départ inhabituel : j'ai fait générer ailleurs une autre version du même produit,
+en JavaScript, à partir d'une description. Je voulais savoir ce que ça donnait. Ça m'a
+appris plus sur mon propre projet que sur le sien.
+
+### Ce que j'ai vu dans l'autre version
+
+Elle est plus jolie que la mienne et couvre sept catégories au lieu de trois primitives.
+Elle a `zod` — une bibliothèque de validation de schéma — dans ses dépendances, et ne
+l'importe nulle part. La sortie du modèle est désérialisée puis affichée telle quelle.
+
+Le point qui m'a le plus marqué n'est pas l'absence de validation, c'est le repli. Quand
+l'appel échoue — clé absente, JSON tronqué, flux coupé — huit chemins différents
+renvoient un contenu écrit en dur, annoncé comme terminé, avec le thème demandé glissé
+dans le titre. L'animateur ne peut pas savoir si son quiz a été généré ou s'il était déjà
+là.
+
+Ce n'est pas un bug. C'est un choix de conception, et c'est l'inverse du mien. Un repli
+peut être légitime, mais il doit s'annoncer. J'ai compris là que « renvoyer 422 avec les
+motifs plutôt que 500 » n'était pas un détail technique : c'est la même question posée à
+l'autre bout.
+
+### Le onzième format
+
+L'autre version traite l'escape game comme une catégorie de plus : une description codée
+en dur, une branche `if needsEnigmes`, un champ `enigmes` dans un type fourre-tout de
+treize champs dont la moitié reste vide selon le cas. Ajouter un format y coûte trois
+fichiers.
+
+J'ai voulu voir ce que ça coûtait chez moi. Réponse : une entrée de catalogue et un
+paragraphe de gabarit. `escape_game`, c'est la primitive `enigme` plus la consigne que les
+énigmes forment une progression ordonnée. Il hérite tel quel des deux niveaux de
+validation, y compris de la règle qui refuse une énigme contenant sa propre solution.
+
+Deux choses en sont sorties :
+
+- Il tombe sur `grand_jeu` et `accessoires`, deux valeurs d'énumération que **aucun format
+  ne portait**. Elles étaient dans le modèle depuis le début sans jamais servir. Le
+  filtrage les expose maintenant pour de vrai.
+- J'ai remplacé le `if code == "dingbats"` de `gabarit_du_format` par un dictionnaire.
+  Sans ça, j'ajoutais dans mon propre code la branche que je reprochais à l'autre version.
+  Une branche par format, c'est le glissement qui ramène la logique de chaque jeu dans le
+  code — lentement, et sans qu'aucun test ne s'en plaigne.
+
+Deux tests gardent l'argument honnête : si `escape_game` gagnait un jour sa propre
+primitive ou son propre chemin de code, ils échouent. Un argument d'entretien qui n'est
+pas testé est une phrase, pas une preuve.
+
+### La fiche imprimable
+
+La seule idée que j'ai vraiment reprise à l'autre version. Elle exporte les activités en
+PDF, et c'est un vrai besoin de terrain que j'avais oublié alors que je l'ai vécu :
+l'animateur n'est pas toujours derrière un écran, et c'est sur le papier qu'il coche les
+équipes pendant la partie.
+
+Chez moi, la page d'un jeu existait déjà — il lui manquait sa version papier. Donc une
+feuille de style `@media print` et un bouton, zéro dépendance.
+
+### Ce qui a coincé
+
+Deux fois la même leçon : **je n'ai rien vu tant que je n'ai pas regardé le rendu réel.**
+
+- Le test de la fiche cherchait « L'animateur lit la question » dans le HTML. Échec : Jinja
+  échappe l'apostrophe en `L&#39;animateur`. J'ai pris un fragment sans apostrophe.
+- À l'aperçu d'impression, la solution ressortait **en vert**. Ma règle `.bonne` était dans
+  le bloc `@media print`, mais `ol.items .bonne` de la feuille d'écran est plus spécifique,
+  donc elle gagnait. Deux classes battent une classe, le `@media` n'y change rien. J'ai
+  repris le même sélecteur dans le bloc d'impression.
+
+Le second n'aurait jamais été rattrapé par un test : aucune assertion sur du HTML ne dit
+qu'une couleur ne s'imprime pas. Il fallait ouvrir l'aperçu. Une règle CSS écrite n'est pas
+une règle CSS appliquée.
+
+Au passage, le vert est aussi un mauvais choix sur papier : en noir et blanc il ne se
+distingue pas d'un gris. Sur la fiche, la bonne réponse se signale par un `✔`.
+
+### Ce que je retiens
+
+Comparer deux implémentations du même produit m'a donné l'argument que je cherchais pour
+l'entretien, et il ne porte pas sur le langage. Les deux appellent un modèle ; l'une lui
+fait confiance, l'autre le mesure. La différence ne se voit pas à la démo — elle se voit
+le soir où la bonne réponse est fausse devant cinquante personnes.
+
+### Vérifications faites
+
+150 tests passent, dont 19 contre un vrai Postgres — j'ai monté la base localement au lieu
+de laisser les tests d'API se faire ignorer, parce qu'un test qu'on n'a pas vu passer ne
+prouve rien. Migration et seed rejoués sur base vide : 11 formats. Page d'un jeu vérifiée
+au navigateur, à l'écran, en aperçu d'impression et en PDF.
+
+### Reste à faire
+
+- Le `dingbats` et l'`escape_game` sont les deux seuls formats à complément de gabarit.
+  Si un troisième arrive, vérifier que le dictionnaire suffit encore.
+- Faire tourner `escape_game` pour de vrai contre Haiku : les énigmes de la capture sont
+  écrites à la main. La contrainte qui m'inquiète est l'énoncé à 200 caractères, qui doit
+  désormais porter une phrase de récit **et** l'énigme. Si le taux de rejet dépasse 20 %
+  sur ce format, la limite est à revoir — pas le modèle à escalader.

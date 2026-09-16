@@ -35,7 +35,7 @@ produisent que quelques formes de contenu.
 | Primitive | Ce que le modèle produit | Formats couverts |
 |---|---|---|
 | `question` | question + 4 propositions + bonne réponse + anecdote | quiz express, quiz des minis, quiz à thème, speed quiz |
-| `enigme` | énoncé + solution + indice | dingbats, personnage mystère, devinettes, anagrammes |
+| `enigme` | énoncé + solution + indice | dingbats, personnage mystère, devinettes, anagrammes, escape game |
 | `vrai_faux` | affirmation + verdict + explication | le scoop, incroyable mais vrai |
 
 **Conséquence : ajouter un format, c'est une ligne en base et un gabarit de prompt, zéro
@@ -43,6 +43,12 @@ ligne de Python.** Ajouter une primitive, ça c'est du code. Cette séparation e
 se configure et ce qui se développe est le point d'architecture central du projet.
 
 Le catalogue de départ contient dix formats pour trois primitives : c'est la démonstration.
+
+Le onzième la met à l'épreuve. `escape_game` est arrivé après coup, une fois le projet
+en place. Une chaîne d'énigmes reliées par un scénario, ça ressemble à un format à part ;
+ce n'en est pas un. C'est la primitive `enigme`, plus un paragraphe de gabarit qui demande
+une progression ordonnée. Il se filtre, se génère, se valide et s'enregistre comme les
+autres — sans une ligne de Python, et un test vérifie qu'il en reste là.
 
 ---
 
@@ -91,6 +97,29 @@ raison est notée dans le `JOURNAL.md`.
 ![Taux de rejet](docs/captures/metriques.png)
 
 > Principe général du projet : *un modèle à qui on ne donne rien à mesurer invente.*
+
+---
+
+## Ce que donne le même produit sans validation
+
+J'ai fait générer une autre version de ce produit, en JavaScript, à partir d'une simple
+description. Elle est plus jolie que celle-ci et couvre plus de formats. Elle m'a surtout
+servi de contre-exemple, et c'est à ce titre qu'elle a sa place ici.
+
+Elle embarque une bibliothèque de validation de schéma dans ses dépendances, et ne
+l'importe **nulle part**. La réponse du modèle est désérialisée puis affichée telle
+quelle : pas de schéma, pas de vérification, pas de juge, pas de comptage. Une bonne
+réponse absente de ses propres propositions arrive au vidéoprojecteur sans que rien ne
+l'arrête.
+
+Plus gênant : quand l'appel échoue — clé absente, JSON tronqué, flux coupé — elle renvoie
+un contenu écrit en dur, annoncé comme terminé, avec le thème demandé dans le titre.
+L'animateur ne peut pas distinguer ce qui a été généré de ce qui était déjà là.
+
+D'où les deux choix opposés de ce projet : **rien n'entre en base sans avoir passé les
+deux niveaux**, et quand les trois tentatives échouent, l'outil affiche l'erreur et les
+motifs. Une erreur explicite est plus utile qu'un contenu plausible — surtout quand on la
+découvre devant cinquante personnes.
 
 ---
 
@@ -258,6 +287,14 @@ réponse, `F` pour le plein écran.
 
 ![Projection d'un dingbat](docs/captures/projection-dingbats.png)
 
+Chaque jeu a aussi sa version papier. L'animateur n'est pas toujours derrière un écran :
+une feuille dans la poche, c'est ce qui reste quand le vidéoprojecteur ne démarre pas. La
+fiche porte la règle du format, les items et les solutions, et le rappel qu'elle ne se
+pose pas sur la table des joueurs. Une feuille de style d'impression, pas une dépendance
+de plus.
+
+![Fiche imprimable d'un escape game](docs/captures/fiche-imprimable.png)
+
 ---
 
 ## Structure
@@ -313,6 +350,9 @@ alembic/             migrations
 - **La protection de la génération est fermée par défaut.** Une règle qui ne s'applique
   que si on a pensé à la configurer ne protège rien : c'est l'absence de configuration
   qui doit bloquer, pas l'inverse.
+- **Le complément de gabarit propre à un format est une entrée de dictionnaire**, pas une
+  branche `if`. Une branche par format, c'est le glissement qui finit par ramener la
+  logique de chaque jeu dans le code — exactement ce que l'architecture cherche à éviter.
 - **Un test relit le catalogue directement dans `CLAUDE.md`** et le compare au code. La
   spécification et l'implémentation ne peuvent plus diverger en silence — ce test a déjà
   rattrapé trois noms de formats qui avaient perdu leurs accents.
