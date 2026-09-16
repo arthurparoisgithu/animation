@@ -7,6 +7,7 @@
     <h1>{{ format.nom }} — {{ jeu.theme }}</h1>
     <nav>
       <a href="/projection/{{ jeu.id }}">Mode projection</a>
+      <button type="button" class="lien" id="imprimer">Imprimer la fiche</button>
       <a href="/">Retour</a>
     </nav>
   </header>
@@ -19,6 +20,11 @@
       <span class="etiquette">{{ jeu.cree_le.strftime("%d/%m/%Y") }}</span>
     </div>
     <p class="attenue" style="margin-top:12px">{{ format.regle_animateur }}</p>
+    {# La feuille porte les solutions : elle ne se pose pas sur la table
+       des joueurs. Ca ne se voit qu'a l'impression, la ou ca compte. #}
+    <p class="impression-seulement avertissement-fiche">
+      Fiche animateur — elle contient les solutions, ne pas la laisser aux équipes.
+    </p>
   </div>
 
   <h2>Contenu</h2>
@@ -48,4 +54,6 @@
     </ol>
   </div>
 </div>
+
+<script src="/static/fiche.js"></script>
 {% endblock %}

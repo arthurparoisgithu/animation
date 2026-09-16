@@ -12,7 +12,13 @@ from fastapi.testclient import TestClient
 from sqlalchemy import text
 
 from app import generateur, juge as module_juge
-from tests.conftest import ModeleSimule, base_requise, sortie_questions, verdicts_juge
+from tests.conftest import (
+    ModeleSimule,
+    base_requise,
+    sortie_enigmes,
+    sortie_questions,
+    verdicts_juge,
+)
 
 pytestmark = base_requise
 
@@ -76,9 +82,9 @@ def test_la_route_de_vie_repond(client):
     assert client.get("/sante").json() == {"statut": "ok"}
 
 
-def test_le_catalogue_contient_les_dix_formats(client):
+def test_le_catalogue_contient_les_onze_formats(client):
     formats = client.get("/api/formats").json()
-    assert len(formats) == 10
+    assert len(formats) == 11
 
 
 def test_le_catalogue_se_filtre_par_public(client):
@@ -200,6 +206,57 @@ def test_les_pages_html_repondent(client, simuler):
         reponse = client.get(chemin)
         assert reponse.status_code == 200, chemin
         assert "text/html" in reponse.headers["content-type"]
+
+
+def test_l_escape_game_traverse_tout_le_chemin_sans_code_dedie(client, simuler):
+    """Le onzieme format doit marcher de bout en bout sans ligne de Python.
+
+    C'est l'argument central du projet mis a l'epreuve : escape_game n'est
+    qu'une entree de catalogue et un complement de gabarit, et pourtant il
+    se filtre, se genere, se valide et s'enregistre comme les autres.
+    """
+    # Il est le seul a se jouer en grand jeu avec des accessoires : ces deux
+    # valeurs d'enumeration n'etaient portees par aucun format avant lui.
+    formats = client.get("/api/formats?moment=grand_jeu&materiel=accessoires").json()
+    assert {f["code"] for f in formats} == {"escape_game"}
+
+    simuler([sortie_enigmes(3)], [verdicts_juge(3)])
+    reponse = client.post(
+        "/api/jeux",
+        json={
+            "format_code": "escape_game",
+            "theme": "le phare abandonne",
+            "public": "ado",
+            "nb_items": 3,
+        },
+    )
+
+    assert reponse.status_code == 201
+    corps = reponse.json()
+    assert len(corps["contenu"]) == 3
+    # La primitive enigme, telle quelle : ni champ en plus, ni champ en moins.
+    assert set(corps["contenu"][0]) == {"enonce", "solution", "indice"}
+
+
+def test_la_page_d_un_jeu_porte_la_fiche_imprimable(client, simuler):
+    """La feuille que l'animateur emporte quand le videoprojecteur lache."""
+    simuler([sortie_questions(2)], [verdicts_juge(2)])
+    jeu = client.post(
+        "/api/jeux",
+        json={"format_code": "quiz_express", "theme": "la fiche", "public": "ado", "nb_items": 2},
+    ).json()
+
+    page = client.get(f"/jeu/{jeu['id']}").text
+
+    assert 'id="imprimer"' in page
+    assert "/static/fiche.js" in page
+    # L'avertissement ne s'affiche qu'a l'impression, mais il doit etre
+    # dans le document : c'est la feuille de style qui le revele.
+    assert "ne pas la laisser aux équipes" in page
+    # La regle du format est sur la fiche : sans elle, la feuille ne sert
+    # qu'a lire les reponses, pas a animer. Fragment sans apostrophe :
+    # Jinja echappe « L'animateur » en « L&#39;animateur ».
+    assert "Les équipes annoncent leur lettre" in page
 
 
 def test_le_json_de_projection_est_echappe(client, simuler):

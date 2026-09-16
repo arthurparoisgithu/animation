@@ -165,3 +165,65 @@ body.projection { display: flex; flex-direction: column; height: 100vh; overflow
 @media (max-width: 720px) {
   .scene .propositions { grid-template-columns: 1fr; }
 }
+
+/* --- Fiche imprimable : la version papier de la page d'un jeu ---
+   L'animateur n'est pas toujours derriere un ecran. Une feuille dans la
+   poche, c'est ce qui reste quand le videoprojecteur ne demarre pas, et
+   c'est sur elle qu'il coche les equipes pendant la partie. */
+
+.impression-seulement { display: none; }
+
+/* Un bouton qui declenche une action de page, pas un lien : il ne mene
+   nulle part, donc ce n'est pas un <a>. Reste qu'il doit ressembler aux
+   entrees de navigation qui l'entourent. */
+button.lien {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 16px;
+  font: inherit;
+  font-size: .92rem;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+button.lien:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+@media print {
+  @page { margin: 16mm; }
+
+  /* Fond sombre a l'ecran, encre noire sur papier : imprimer le theme de
+     l'interface viderait une cartouche par fiche. */
+  body { background: #fff; color: #000; }
+  .page { max-width: none; padding: 0; }
+
+  nav, button.lien { display: none; }
+  .impression-seulement { display: block; }
+
+  header.principal { border-bottom: 1px solid #000; margin-bottom: 18px; }
+  .carte { background: none; border: 1px solid #999; }
+  .etiquette { border-color: #999; color: #000; }
+  .attenue { color: #333; }
+
+  .avertissement-fiche {
+    border: 1px solid #000;
+    padding: 6px 10px;
+    margin: 14px 0 0;
+    font-size: .85rem;
+    font-weight: 600;
+  }
+
+  /* Le vert ne se distingue pas du gris en noir et blanc : sur papier, la
+     bonne reponse se signale par un signe et non par une couleur. */
+  /* ol.items .bonne est plus specifique que .bonne : sans le meme
+     selecteur ici, la regle de l'ecran gagne et le vert part a l'encre. */
+  ol.items .bonne { color: #000; font-weight: 700; }
+  ol.items .bonne::before { content: "\2714\00a0"; }
+
+  /* Une question coupee en deux par un saut de page est inutilisable en
+     animation : on la garde entiere, quitte a gacher du papier. */
+  ol.items li { break-inside: avoid; page-break-inside: avoid; margin-bottom: 14px; }
+  h2 { break-after: avoid; page-break-after: avoid; }
+
+  a { color: #000; text-decoration: none; }
+}

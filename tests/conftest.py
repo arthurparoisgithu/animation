@@ -76,6 +76,24 @@ def sortie_questions(nb: int, depart: int = 0) -> str:
     return json.dumps(items, ensure_ascii=False)
 
 
+# Des solutions volontairement absentes de l'enonce et de l'indice : la
+# validation de la primitive enigme refuse une enigme qui se donne.
+_SOLUTIONS = ("Lanterne", "Boussole", "Sextant", "Ancre", "Cordage", "Fanal")
+
+
+def sortie_enigmes(nb: int) -> str:
+    """Un lot d'enigmes valides, au format attendu du modele."""
+    items = [
+        {
+            "enonce": f"Etape {i} : ce que le gardien reclame avant d'ouvrir la serrure.",
+            "solution": _SOLUTIONS[i % len(_SOLUTIONS)],
+            "indice": "Un marin du siecle dernier en avait toujours un.",
+        }
+        for i in range(nb)
+    ]
+    return json.dumps(items, ensure_ascii=False)
+
+
 def verdicts_juge(nb: int, accepte: bool = True) -> str:
     return json.dumps(
         [
