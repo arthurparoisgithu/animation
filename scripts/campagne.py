@@ -31,11 +31,11 @@ from app.transport import DOSSIER_FIXTURES, FixtureIntrouvable, construire
 # Un theme par format, choisi pour rester lisible et sans ambiguite.
 # Le public retenu est le premier de la liste du format.
 THEMES = {
-    "quiz_express": "le cinema des annees 90",
+    "quiz_express": "le cinéma des années 90",
     "quiz_minis": "les animaux de la ferme",
     "quiz_thematique": "les capitales du monde",
     "speed_quiz": "le sport",
-    "dingbats": "les expressions francaises",
+    "dingbats": "les expressions françaises",
     "personnage_mystere": "les explorateurs",
     "devinettes": "la nature",
     "anagrammes": "les instruments de musique",

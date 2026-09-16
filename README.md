@@ -281,7 +281,7 @@ scripts/
   campagne.py        un jeu par format : enregistre les fixtures, ou les rejoue
   seed.py            insertion idempotente du catalogue
 fixtures/            réponses de modèle enregistrées (voir fixtures/README.md)
-tests/               143 tests, dont 17 contre un vrai Postgres
+tests/               145 tests, dont 17 contre un vrai Postgres
 alembic/             migrations
 ```
 
@@ -312,6 +312,9 @@ alembic/             migrations
 - **La protection de la génération est fermée par défaut.** Une règle qui ne s'applique
   que si on a pensé à la configurer ne protège rien : c'est l'absence de configuration
   qui doit bloquer, pas l'inverse.
+- **Un test relit le catalogue directement dans `CLAUDE.md`** et le compare au code. La
+  spécification et l'implémentation ne peuvent plus diverger en silence — ce test a déjà
+  rattrapé trois noms de formats qui avaient perdu leurs accents.
 
 ---
 

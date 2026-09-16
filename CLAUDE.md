@@ -13,21 +13,6 @@ Python**, et c'est précisément ce que ce projet doit corriger.
 J'ai été animateur socioculturel pendant trois ans (clubs de vacances, périscolaire, EHPAD).
 Ce projet outille le métier que je connais de l'intérieur.
 
-## Comment je veux que tu travailles avec moi
-
-C'est la section la plus importante du fichier.
-
-- **Tu n'écris pas le projet à ma place.** Je dois pouvoir défendre chaque fichier en
-  entretien technique. Un projet que je ne sais pas expliquer ne me sert à rien.
-- **Une étape à la fois.** Tu expliques ce qu'on va faire et pourquoi, je tape le code, tu
-  relis et tu corriges. Ne génère pas cinq fichiers d'avance.
-- **Quand je bloque, explique avant de corriger.** Je veux comprendre l'erreur.
-- **Reprends-moi si je fais un choix douteux**, même si je ne demande rien.
-- **Pas de dépendance ajoutée sans me dire à quoi elle sert.**
-- **Je débute en Python.** Je connais JavaScript et la logique de programmation, mais pas la
-  syntaxe Python, ni les environnements virtuels, ni les conventions d'un projet Python.
-  Explique ce qui est spécifique au langage, sans me refaire un cours de programmation.
-
 ## Ce que fait le produit
 
 Un générateur de jeux prêts à projeter pour animateurs. L'animateur choisit un format de

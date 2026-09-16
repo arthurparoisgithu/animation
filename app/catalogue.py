@@ -18,9 +18,9 @@ CATALOGUE: list[dict] = [
         "moment": Moment.cafe_apero,
         "materiel": Materiel.aucun,
         "regle_animateur": (
-            "L'animateur lit la question a voix haute et les quatre propositions. "
-            "Les equipes annoncent leur lettre en levant la main. "
-            "Un point par bonne reponse, on enchaine sans temps mort."
+            "L'animateur lit la question à voix haute et les quatre propositions. "
+            "Les équipes annoncent leur lettre en levant la main. "
+            "Un point par bonne réponse, on enchaîne sans temps mort."
         ),
         "nb_items_defaut": 10,
     },
@@ -32,37 +32,37 @@ CATALOGUE: list[dict] = [
         "moment": Moment.veillee_enfants,
         "materiel": Materiel.videoprojecteur,
         "regle_animateur": (
-            "Question projetee, les enfants repondent tous ensemble a voix haute. "
-            "On ne compte pas les points : on applaudit chaque bonne reponse. "
-            "L'anecdote sert a relancer entre deux questions."
+            "Question projetée, les enfants répondent tous ensemble à voix haute. "
+            "On ne compte pas les points : on applaudit chaque bonne réponse. "
+            "L'anecdote sert à relancer entre deux questions."
         ),
         "nb_items_defaut": 8,
     },
     {
         "code": "quiz_thematique",
-        "nom": "Quiz a theme",
+        "nom": "Quiz à thème",
         "primitive": Primitive.question,
         "publics": ["general"],
         "moment": Moment.soiree_adultes,
         "materiel": Materiel.videoprojecteur,
         "regle_animateur": (
-            "Toutes les questions portent sur un meme theme annonce a l'avance. "
-            "Les equipes ecrivent leur reponse sur une ardoise, revelation simultanee. "
-            "Deux points si la reponse est trouvee sans l'anecdote."
+            "Toutes les questions portent sur un même thème annoncé à l'avance. "
+            "Les équipes écrivent leur réponse sur une ardoise, révélation simultanée. "
+            "Deux points si la réponse est trouvée sans l'anecdote."
         ),
         "nb_items_defaut": 12,
     },
     {
         "code": "speed_quiz",
-        "nom": "Speed quiz par equipes",
+        "nom": "Speed quiz par équipes",
         "primitive": Primitive.question,
         "publics": ["ado", "adulte", "general"],
         "moment": Moment.soiree_adultes,
         "materiel": Materiel.videoprojecteur,
         "regle_animateur": (
-            "Chronometre de trente secondes par question, la premiere equipe qui "
-            "buzze repond. Mauvaise reponse : la main passe a l'equipe suivante. "
-            "L'animateur enchaine vite, le rythme fait le jeu."
+            "Chronomètre de trente secondes par question, la première équipe qui "
+            "buzze répond. Mauvaise réponse : la main passe à l'équipe suivante. "
+            "L'animateur enchaîne vite, le rythme fait le jeu."
         ),
         "nb_items_defaut": 15,
     },
@@ -74,23 +74,23 @@ CATALOGUE: list[dict] = [
         "moment": Moment.veillee_enfants,
         "materiel": Materiel.videoprojecteur,
         "regle_animateur": (
-            "Un rebus visuel est projete, les equipes cherchent l'expression cachee. "
+            "Un rébus visuel est projeté, les équipes cherchent l'expression cachée. "
             "L'animateur donne l'indice au bout d'une minute. "
-            "La premiere equipe qui trouve marque le point."
+            "La première équipe qui trouve marque le point."
         ),
         "nb_items_defaut": 10,
     },
     {
         "code": "personnage_mystere",
-        "nom": "Personnage mystere",
+        "nom": "Personnage mystère",
         "primitive": Primitive.enigme,
         "publics": ["junior", "ado", "adulte", "general"],
         "moment": Moment.soiree_adultes,
         "materiel": Materiel.aucun,
         "regle_animateur": (
-            "L'animateur lit l'enonce, les equipes proposent un nom a tour de role. "
-            "Chaque mauvaise proposition fait perdre un point a l'equipe. "
-            "L'indice n'est lache que si personne ne trouve."
+            "L'animateur lit l'énoncé, les équipes proposent un nom à tour de rôle. "
+            "Chaque mauvaise proposition fait perdre un point à l'équipe. "
+            "L'indice n'est lâché que si personne ne trouve."
         ),
         "nb_items_defaut": 8,
     },
@@ -102,9 +102,9 @@ CATALOGUE: list[dict] = [
         "moment": Moment.veillee_enfants,
         "materiel": Materiel.aucun,
         "regle_animateur": (
-            "L'animateur lit la devinette, les enfants repondent en levant la main. "
-            "L'indice est donne tres vite : l'objectif est qu'ils trouvent. "
-            "Aucun score, on enchaine tant que l'attention tient."
+            "L'animateur lit la devinette, les enfants répondent en levant la main. "
+            "L'indice est donné très vite : l'objectif est qu'ils trouvent. "
+            "Aucun score, on enchaîne tant que l'attention tient."
         ),
         "nb_items_defaut": 10,
     },
@@ -116,9 +116,9 @@ CATALOGUE: list[dict] = [
         "moment": Moment.cafe_apero,
         "materiel": Materiel.videoprojecteur,
         "regle_animateur": (
-            "Les lettres melangees sont projetees, chacun cherche le mot d'origine. "
-            "Premier a crier la solution, premier servi. "
-            "L'indice donne la categorie du mot."
+            "Les lettres mélangées sont projetées, chacun cherche le mot d'origine. "
+            "Premier à crier la solution, premier servi. "
+            "L'indice donne la catégorie du mot."
         ),
         "nb_items_defaut": 12,
     },
@@ -130,8 +130,8 @@ CATALOGUE: list[dict] = [
         "moment": Moment.soiree_adultes,
         "materiel": Materiel.aucun,
         "regle_animateur": (
-            "L'animateur annonce l'affirmation sur le ton du journal televise. "
-            "Le public se deplace : a gauche si c'est vrai, a droite si c'est faux. "
+            "L'animateur annonce l'affirmation sur le ton du journal télévisé. "
+            "Le public se déplace : à gauche si c'est vrai, à droite si c'est faux. "
             "Ceux qui se trompent s'assoient, le dernier debout gagne."
         ),
         "nb_items_defaut": 12,
@@ -144,9 +144,9 @@ CATALOGUE: list[dict] = [
         "moment": Moment.cafe_apero,
         "materiel": Materiel.aucun,
         "regle_animateur": (
-            "Chaque table parie sur l'affirmation avant la revelation. "
-            "L'animateur lit l'explication a voix haute : c'est elle qui fait le jeu. "
-            "Une mise doublee pour les tables qui osent l'affirmation la plus improbable."
+            "Chaque table parie sur l'affirmation avant la révélation. "
+            "L'animateur lit l'explication à voix haute : c'est elle qui fait le jeu. "
+            "Une mise doublée pour les tables qui osent l'affirmation la plus improbable."
         ),
         "nb_items_defaut": 10,
     },

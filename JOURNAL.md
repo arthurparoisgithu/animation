@@ -344,3 +344,51 @@ quelqu'un d'autre.
 143 tests passent (17 contre Postgres). Les deux modes vérifiés sur l'application
 réellement lancée : `api` sans code répond 403 avec le message d'explication, `rejeu`
 sans code fonctionne normalement.
+
+---
+
+## Session 5 — alignement avec le cahier des charges
+
+J'ai retiré du `CLAUDE.md` la section sur la façon de travailler ensemble, devenue sans
+objet. Puis j'ai voulu vérifier une chose simple mais que personne ne vérifiait : **le
+code correspond-il vraiment à la spécification ?**
+
+### Trois formats portaient le mauvais nom
+
+En comparant la table du cahier des charges au catalogue en Python, trois écarts :
+« Quiz a theme » au lieu de « Quiz à thème », « Personnage mystere », « Speed quiz par
+equipes ».
+
+La cause : j'avais dépouillé les accents partout par facilité d'écriture, sans distinguer
+ce qui est lu par une machine de ce qui est lu par un humain. Or `nom` et
+`regle_animateur` sont **affichés à l'animateur**, et apparaissaient tels quels sur les
+captures du README. Dans une application française présentée à un recruteur, ça se voit
+immédiatement.
+
+Corrigé partout : noms, règles d'animateur, gabarits de prompt — ces derniers
+correspondent maintenant mot pour mot au cahier des charges — et thèmes de la campagne.
+Bon timing : changer un gabarit change l'empreinte des fixtures, et aucune campagne
+réelle n'a encore tourné.
+
+### Le garde-fou
+
+Un test relit la table du catalogue **directement dans `CLAUDE.md`** et la compare au
+code : codes, noms, primitives, publics, matériel, moment. La spécification et
+l'implémentation ne peuvent plus diverger sans que la CI le dise.
+
+J'ai vérifié qu'il attrape une régression avant de le garder : en remettant « Quiz a
+theme » dans le catalogue, le test échoue avec `assert 'Quiz a theme' == 'Quiz à thème'`.
+C'est la même méthode que pour le mot de passe à `%` — un garde-fou qu'on n'a pas vu
+échouer ne garde rien.
+
+### Ce que je retiens
+
+Les tests couvraient la logique — la validation, la normalisation, l'orchestration — mais
+rien ne couvrait **la donnée**. Or dans ce projet la donnée *est* une partie de
+l'architecture : ajouter un format, c'est une ligne de catalogue et un gabarit, zéro ligne
+de Python. Ce qui se configure mérite donc autant de vérification que ce qui se développe.
+
+### Vérifications faites
+
+145 tests passent (17 contre Postgres). Captures régénérées, interface repassée au
+navigateur : navigation clavier, révélation, filtrage, aucune erreur console.
