@@ -4,8 +4,9 @@ from app.catalogue import CATALOGUE, gabarit_du_format
 from app.schemas import Materiel, Moment, Primitive, Public
 
 
-def test_dix_formats_au_depart():
-    assert len(CATALOGUE) == 10
+def test_onze_formats():
+    # Dix au depart, plus escape_game ajoute ensuite.
+    assert len(CATALOGUE) == 11
 
 
 def test_les_codes_sont_uniques():
@@ -13,7 +14,7 @@ def test_les_codes_sont_uniques():
     assert len(codes) == len(set(codes))
 
 
-def test_les_dix_formats_ne_couvrent_que_trois_primitives():
+def test_les_formats_ne_couvrent_que_trois_primitives():
     # C'est l'idee centrale du projet : vingt jeux, trois formes de contenu.
     primitives = {format_jeu["primitive"] for format_jeu in CATALOGUE}
     assert primitives == set(Primitive)
@@ -89,3 +90,34 @@ def test_les_noms_affiches_sont_en_francais_accentue():
     # Fautes precises deja rencontrees.
     for faute in ("Quiz a theme", "Personnage mystere", "Speed quiz par equipes"):
         assert faute not in corpus.title() and faute.lower() not in corpus
+
+
+def test_l_escape_game_ne_coute_aucune_primitive_nouvelle():
+    """Le onzieme format est la preuve de l'idee centrale : il doit le rester.
+
+    Si escape_game gagnait un jour sa propre primitive ou une branche dans
+    le code, l'argument « ajouter un format ne coute pas une ligne de
+    Python » deviendrait faux sans que rien ne s'en plaigne.
+    """
+    from app.gabarits import COMPLEMENT_PAR_FORMAT, GABARIT_PAR_PRIMITIVE
+
+    format_jeu = next(f for f in CATALOGUE if f["code"] == "escape_game")
+    assert format_jeu["primitive"] is Primitive.enigme
+
+    # Tout ce que le format ajoute tient dans son complement de gabarit.
+    gabarit = gabarit_du_format("escape_game", Primitive.enigme)
+    assert gabarit.startswith(GABARIT_PAR_PRIMITIVE[Primitive.enigme])
+    assert gabarit.removeprefix(GABARIT_PAR_PRIMITIVE[Primitive.enigme]) == (
+        COMPLEMENT_PAR_FORMAT["escape_game"]
+    )
+    # L'ordre est ce qui distingue une chaine d'enigmes d'un lot d'enigmes.
+    assert "ordre" in gabarit
+
+
+def test_un_format_sans_complement_recoit_le_gabarit_nu():
+    """Le cas courant : la primitive suffit, le format n'ajoute rien."""
+    from app.gabarits import GABARIT_PAR_PRIMITIVE
+
+    assert gabarit_du_format("devinettes", Primitive.enigme) == (
+        GABARIT_PAR_PRIMITIVE[Primitive.enigme]
+    )

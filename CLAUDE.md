@@ -34,7 +34,7 @@ de contenu.
 | Primitive | Ce que le modèle produit | Formats couverts |
 |---|---|---|
 | `question` | question + 4 propositions + bonne réponse + anecdote | quiz express, quiz des minis, quiz thématique, speed quiz |
-| `enigme` | énoncé + solution + indice | dingbats, personnage mystère, devinettes, anagrammes |
+| `enigme` | énoncé + solution + indice | dingbats, personnage mystère, devinettes, anagrammes, escape game |
 | `vrai_faux` | affirmation + verdict + explication | le scoop, incroyable mais vrai, deux vérités un mensonge |
 
 Conséquence : **ajouter un format = une ligne en base et un gabarit de prompt, zéro ligne de
@@ -93,7 +93,8 @@ requête SQL avec l'opérateur de contenance plutôt que de tout passer par l'OR
 
 ## Catalogue de départ
 
-Dix formats à insérer en seed. Ils ne couvrent que trois primitives : c'est le but.
+Dix formats à insérer en seed, plus un onzième ajouté après coup. Ils ne couvrent que
+trois primitives : c'est le but.
 
 | code | nom | primitive | publics | moment | matériel |
 |---|---|---|---|---|---|
@@ -107,6 +108,15 @@ Dix formats à insérer en seed. Ils ne couvrent que trois primitives : c'est le
 | `anagrammes` | Anagrammes | enigme | ado, adulte, general | cafe_apero | videoprojecteur |
 | `le_scoop` | Le scoop | vrai_faux | junior, ado, adulte, general | soiree_adultes | aucun |
 | `incroyable_vrai` | Incroyable mais vrai | vrai_faux | adulte, general | cafe_apero | aucun |
+| `escape_game` | Escape game | enigme | junior, ado, adulte, general | grand_jeu | accessoires |
+
+`escape_game` est arrivé après le reste, une fois le projet en place, et c'est pour ça qu'il
+est intéressant. Une chaîne d'énigmes reliées par un scénario, ça ressemble à un format à
+part ; ce n'en est pas un. C'est la primitive `enigme`, plus un paragraphe de gabarit qui
+demande une progression ordonnée. Coût en Python : zéro ligne. Il hérite tel quel des deux
+niveaux de validation, y compris de la règle qui refuse une énigme contenant sa propre
+solution. C'est la démonstration que la séparation tient, et elle vaut mieux qu'une
+promesse dans un README.
 
 ## Gabarits de prompt
 

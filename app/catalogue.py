@@ -6,7 +6,7 @@ et quel gabarit de prompt utiliser. Ajouter un onzieme format se fait ici et
 en base, sans toucher une ligne de code de generation ou de validation.
 """
 
-from app.gabarits import COMPLEMENT_DINGBATS, GABARIT_PAR_PRIMITIVE
+from app.gabarits import COMPLEMENT_PAR_FORMAT, GABARIT_PAR_PRIMITIVE
 from app.schemas import Materiel, Moment, Primitive
 
 CATALOGUE: list[dict] = [
@@ -150,12 +150,23 @@ CATALOGUE: list[dict] = [
         ),
         "nb_items_defaut": 10,
     },
+    {
+        "code": "escape_game",
+        "nom": "Escape game",
+        "primitive": Primitive.enigme,
+        "publics": ["junior", "ado", "adulte", "general"],
+        "moment": Moment.grand_jeu,
+        "materiel": Materiel.accessoires,
+        "regle_animateur": (
+            "Les énigmes se résolvent dans l'ordre : chacune ouvre l'étape suivante. "
+            "Quarante-cinq minutes pour toute la chaîne, l'animateur lâche l'indice "
+            "quand une équipe bloque plus de cinq minutes sur la même étape."
+        ),
+        "nb_items_defaut": 6,
+    },
 ]
 
 
 def gabarit_du_format(code: str, primitive: Primitive) -> str:
     """Le gabarit de la primitive, plus l'eventuel complement propre au format."""
-    gabarit = GABARIT_PAR_PRIMITIVE[primitive]
-    if code == "dingbats":
-        gabarit += COMPLEMENT_DINGBATS
-    return gabarit
+    return GABARIT_PAR_PRIMITIVE[primitive] + COMPLEMENT_PAR_FORMAT.get(code, "")

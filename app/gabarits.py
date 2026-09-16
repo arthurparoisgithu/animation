@@ -29,10 +29,24 @@ Réponds uniquement par un tableau JSON d'objets {affirmation, verdict, explicat
 COMPLEMENT_DINGBATS = """
 Précision : l'énoncé est un rébus visuel composé d'emojis et de jeux typographiques directement affichables en HTML (positions, répétitions, barres, exposants). Ce n'est jamais une image à dessiner ni une description d'image."""
 
+# Precision propre a l'escape game : les enigmes ne sont pas independantes.
+# Tout le format tient dans ce paragraphe — c'est le sujet de la demonstration.
+COMPLEMENT_ESCAPE_GAME = """
+Précision : les énigmes forment une progression unique et se lisent dans l'ordre. Elles jalonnent une même histoire liée au thème, de la plus accessible à la plus difficile, chacune ouvrant l'étape suivante. L'énoncé peut situer l'étape dans le récit en une phrase courte avant de poser l'énigme, sans dépasser la limite de caractères."""
+
 GABARIT_PAR_PRIMITIVE = {
     Primitive.question: GABARIT_QUESTION,
     Primitive.enigme: GABARIT_ENIGME,
     Primitive.vrai_faux: GABARIT_VRAI_FAUX,
+}
+
+# Le complement propre a un format, quand la primitive seule ne suffit pas.
+# Un dictionnaire et non une suite de « if » : ajouter un format precise ici
+# une entree, jamais une branche. Une branche par format, c'est le glissement
+# qui finit par ramener la logique de chaque jeu dans le code.
+COMPLEMENT_PAR_FORMAT: dict[str, str] = {
+    "dingbats": COMPLEMENT_DINGBATS,
+    "escape_game": COMPLEMENT_ESCAPE_GAME,
 }
 
 # Les placeholders reconnus. Tout ce qui ressemble a {autre chose} est laisse
