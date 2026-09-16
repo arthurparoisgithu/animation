@@ -25,6 +25,7 @@ from app.requetes import (
 )
 from app.schemas import Materiel, Moment, Public
 from app.service import FormatInconnu, generer_et_enregistrer
+from app.transport import FixtureIntrouvable
 
 gabarits_html = Jinja2Templates(directory="app/templates")
 
@@ -116,6 +117,16 @@ def creer_jeu(
         )
     except FormatInconnu:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Format inconnu.")
+    except FixtureIntrouvable:
+        # Instance en mode rejeu : elle ne sait montrer que ce qui a deja
+        # ete genere. Sans ce cas, une demo publique renverrait une 500 des
+        # qu'un visiteur saisit un theme inedit.
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            "Cette instance fonctionne en mode demonstration : elle rejoue des "
+            "generations deja realisees. Choisis un theme deja present dans la "
+            "liste des jeux enregistres.",
+        )
     except GenerationEchouee as erreur:
         # 422 et non 500 : ce n'est pas un bug, c'est la validation qui a
         # fait son travail et refuse de livrer du contenu non verifie.

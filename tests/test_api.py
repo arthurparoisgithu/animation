@@ -5,6 +5,8 @@ Ils ont en revanche besoin d'un vrai Postgres : les tableaux, le jsonb et
 l'operateur de contenance ne s'emulent pas en SQLite.
 """
 
+from pathlib import Path
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import text
@@ -187,3 +189,20 @@ def test_le_json_de_projection_est_echappe(client, simuler):
     bloc = page.split('type="application/json">')[1].split("</script>")[0]
     assert "\\u003c" in bloc
     assert "</script> piege" not in bloc
+
+
+def test_en_mode_rejeu_un_theme_inedit_renvoie_503_et_non_500(client, monkeypatch):
+    # Scenario de la demo publique : l'instance rejoue des fixtures et un
+    # visiteur saisit un theme qui n'a jamais ete genere.
+    from app import modele
+    from app.transport import TransportRejeu
+
+    monkeypatch.setattr(modele, "_transport", TransportRejeu(Path("aucun_dossier")))
+
+    reponse = client.post(
+        "/api/jeux",
+        json={"format_code": "quiz_express", "theme": "un theme inedit", "public": "ado"},
+    )
+
+    assert reponse.status_code == 503
+    assert "demonstration" in reponse.json()["detail"]

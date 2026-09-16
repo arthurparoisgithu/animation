@@ -137,3 +137,90 @@ casserait immédiatement si quelqu'un inversait les deux niveaux.
 - [ ] Ajuster les gabarits en fonction de ces taux, et noter ici chaque ajustement.
 - [ ] Décider si un format dépasse durablement 20 % et doit passer en Sonnet.
 - [ ] Déploiement, avec `CODE_GENERATION` renseigné pour protéger la génération réelle.
+
+---
+
+## Session 2 — enregistrer une fois, rejouer toujours
+
+### Le problème à résoudre
+
+Je n'ai pas encore lancé une seule génération réelle, et chaque appel coûte. Si le
+projet ne sait fonctionner qu'avec une clé d'API active, alors : les tests dépendent du
+réseau, la démo en ligne fait payer ma clé pour les visiteurs, et un recruteur qui clone
+le dépôt ne voit rien tourner.
+
+### Ce que j'ai compris sur le coût
+
+En vérifiant la tarification réelle de Haiku 4.5 (1 $ / 5 $ par million de tokens),
+j'arrive à **environ 1 centime par jeu de 10 items**, pas un demi : mon estimation
+initiale oubliait l'appel au juge. Le juge coûte ~0,30 ¢, la génération ~0,64 ¢. Cent
+jeux ≈ 1 €. Ça ne change pas la décision, mais c'est un chiffre que je dois pouvoir
+annoncer juste.
+
+Deux leviers écartés après vérification, et savoir *pourquoi* on les écarte vaut mieux
+que les appliquer au hasard : le **Batch API** (−50 %) est asynchrone, donc inutilisable
+pour une génération à la demande ; le **cache de prompt** ne s'applique pas, mes gabarits
+faisant quelques centaines de tokens, sous le minimum cachable.
+
+### La solution : une couture, trois implémentations
+
+`app/transport.py`. Le générateur et le juge continuent d'appeler `modele.appeler()` ;
+c'est cette fonction qui délègue au transport actif.
+
+- `TransportApi` — l'appel réel, le seul qui coûte.
+- `TransportEnregistre` — décore un transport et écrit la réponse brute sur disque.
+- `TransportRejeu` — relit le disque, ne touche jamais au réseau.
+
+Ce que j'aime dans ce découpage : **aucun `if mode == ...` dans le générateur**. La
+logique métier ignore complètement d'où vient la réponse. C'est le genre de séparation
+que je saurai défendre.
+
+### Décisions de conception
+
+**L'empreinte inclut le modèle, pas seulement le prompt.** La même question posée à
+Haiku et à Sonnet sont deux appels différents ; rejouer l'un à la place de l'autre serait
+une erreur silencieuse, donc invisible.
+
+**Le nom de fichier reste lisible** : début du prompt en slug + empreinte courte. Sinon
+les fixtures s'appellent `a1b2c3d4.json` et ne sont inspectables qu'une par une. Une
+fixture doit pouvoir être relue par un humain, sinon elle ne prouve rien.
+
+**On enregistre la réponse brute, avant validation.** Une sortie rejetée est la fixture
+la plus intéressante du projet : c'est elle qui prouve que la validation attrape quelque
+chose de réel et pas de théorique.
+
+**Une fixture absente lève une erreur, elle ne retombe pas sur un appel réel.** C'est le
+point le plus important du module. Un repli silencieux vers l'API ferait dépenser une
+démo publique sans prévenir.
+
+### Ce qui a coincé
+
+**Le trou que je n'avais pas vu.** Une fois le mode rejeu en place, j'ai testé le
+scénario réel : un visiteur de la démo saisit un thème jamais généré. `FixtureIntrouvable`
+remontait jusqu'à FastAPI sans être rattrapée — **erreur 500**. Or c'est le cas d'usage
+normal d'une démo publique, pas un cas limite. Corrigé en 503 avec un message qui dit
+quoi faire. Leçon : tester le mode dégradé avec le scénario du visiteur, pas seulement
+avec le mien.
+
+**J'ai failli committer de fausses fixtures.** Pour prouver la chaîne sans clé, j'ai
+écrit un faux modèle produisant du JSON plausible, et la campagne a généré 20 fixtures.
+Elles marchent parfaitement — et elles sont fausses. Les committer aurait fait passer du
+contenu fabriqué pour une mesure réelle, exactement ce que le projet reproche aux modèles.
+Elles sont restées dans le scratchpad ; `fixtures/` ne contient que son README tant
+qu'aucune campagne réelle n'a tourné.
+
+### Vérifications faites
+
+Enregistrement puis rejeu sur les dix formats : **20 appels à l'enregistrement, 0 au
+rejeu**, résultats identiques au format près. Puis la campagne contre une vraie base :
+10 jeux, 60 items, 10 rejets enregistrés, sans un seul appel réseau.
+
+133 tests passent, dont 14 contre Postgres.
+
+### Reste à faire
+
+- [ ] **La campagne réelle**, avec une clé, sur mon poste : `python -m scripts.campagne
+      --enregistrer`. C'est la seule chose qui manque encore au projet.
+- [ ] Regarder les taux de rejet obtenus et ajuster les gabarits en conséquence.
+- [ ] Mettre en ligne en `MODE_MODELE=rejeu`, et obtenir un lien à mettre dans le
+      dossier de candidature.

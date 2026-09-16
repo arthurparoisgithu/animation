@@ -2,6 +2,11 @@
 
 Tout ce qui touche au reseau est isole ici : le reste du projet
 (validation, juge, generateur) reste testable sans cle d'API.
+
+appeler() delegue au transport actif (app/transport.py), ce qui permet
+d'enregistrer les reponses reelles une fois puis de les rejouer sans
+rien payer. Les appelants ne changent pas : ils appellent toujours
+appeler().
 """
 
 import json
@@ -10,6 +15,7 @@ import re
 from anthropic import Anthropic
 
 from app.config import reglages
+from app.transport import Transport, construire
 
 
 class SortieIllisible(RuntimeError):
@@ -59,11 +65,23 @@ def extraire_json(texte: str) -> list:
     return donnees
 
 
+_transport: Transport | None = None
+
+
+def definir_transport(transport: Transport | None) -> None:
+    """Choisit d'ou viennent les reponses. None remet le mode par defaut."""
+    global _transport
+    _transport = transport
+
+
+def transport_actif() -> Transport:
+    """Le transport courant, construit depuis la configuration au besoin."""
+    global _transport
+    if _transport is None:
+        _transport = construire(reglages().mode_modele)
+    return _transport
+
+
 def appeler(prompt: str, *, modele: str, max_tokens: int = 4096) -> str:
     """Un appel, un prompt, le texte brut de la reponse."""
-    reponse = client().messages.create(
-        model=modele,
-        max_tokens=max_tokens,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return "".join(bloc.text for bloc in reponse.content if bloc.type == "text")
+    return transport_actif()(prompt, modele=modele, max_tokens=max_tokens)

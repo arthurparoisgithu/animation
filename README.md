@@ -150,6 +150,42 @@ python -m scripts.generer --format dingbats --theme "les animaux" --public junio
 `--sans-juge` évite l'appel au juge pendant la mise au point d'un gabarit : on ne paie
 alors que la génération.
 
+### Enregistrer une fois, rejouer toujours
+
+Un appel de modèle coûte de l'argent et n'est jamais deux fois identique. Le projet
+isole donc **une seule couture** — `app/transport.py` — et la branche de trois façons :
+
+| Mode | Ce qui se passe | Coût |
+|---|---|---|
+| `api` | appel réel | ~1 centime par jeu |
+| `enregistrement` | appel réel, puis la réponse brute est écrite dans `fixtures/` | idem, une fois |
+| `rejeu` | la réponse enregistrée est relue, aucun réseau | zéro |
+
+```bash
+# Une seule fois, avec une clé d'API : c'est la seule commande qui coûte.
+python -m scripts.campagne --enregistrer
+
+# Ensuite, autant de fois qu'on veut, gratuitement.
+python -m scripts.campagne --rejouer
+```
+
+Le générateur et le juge ne savent pas d'où vient la réponse — ils appellent
+`modele.appeler()`, qui délègue au transport actif. Rien d'autre ne change.
+
+Trois bénéfices, et le troisième est le plus important :
+
+- **le coût** : une campagne payante, rejouée ensuite par les tests, par la démo et par
+  quiconque clone le dépôt ;
+- **le déterminisme** : mêmes entrées, mêmes sorties, donc un test qui passe aujourd'hui
+  passera demain ;
+- **la preuve** : ce sont de *vraies* sorties de modèle, défauts compris. Une fixture que
+  la validation rejette vaut mieux qu'un cas inventé — elle montre que le problème est
+  réel.
+
+Un prompt absent des fixtures lève une erreur explicite plutôt que de repartir vers un
+appel facturé : une démo en ligne ne doit pas se mettre à dépenser sans prévenir. Côté
+API, ce cas renvoie un 503 avec un message lisible, pas un 500.
+
 ### Les tests
 
 ```bash
@@ -189,6 +225,7 @@ app/
   validation.py      niveau 1 : les règles déterministes, fonctions pures
   gabarits.py        un gabarit de prompt par primitive
   catalogue.py       les dix formats de départ, source de vérité du seed
+  transport.py       la couture : appel réel, enregistré, ou rejoué depuis fixtures/
   modele.py          appel Anthropic et extraction du JSON — tout le réseau est ici
   juge.py            niveau 2 : exactitude factuelle et adéquation au public
   generateur.py      orchestration : générer, valider, juger, recommencer
@@ -198,8 +235,10 @@ app/
   api.py             les routes JSON et les pages
 scripts/
   generer.py         génération à la main, sans base ni API
+  campagne.py        un jeu par format : enregistre les fixtures, ou les rejoue
   seed.py            insertion idempotente du catalogue
-tests/               120 tests, dont 13 contre un vrai Postgres
+fixtures/            réponses de modèle enregistrées (voir fixtures/README.md)
+tests/               133 tests, dont 14 contre un vrai Postgres
 alembic/             migrations
 ```
 
@@ -224,6 +263,9 @@ alembic/             migrations
   passe : c'est le lot complet que l'animateur projette.
 - **Un item qui viole trois règles compte pour un rejet**, avec ses trois motifs. Le taux
   de rejet se mesure en items, pas en motifs.
+- **Une seule couture pour l'appel de modèle**, et trois implémentations derrière. C'est
+  ce qui rend le projet démontrable sans clé et testable sans réseau, sans une seule
+  ligne de code conditionnel dans le générateur ou le juge.
 
 ---
 
@@ -236,9 +278,9 @@ alembic/             migrations
 - **Aucun nom de format télévisé** : les noms du catalogue sont les miens.
 - **L'audio et l'image ne se génèrent pas ici.** Une playlist de blind test, si : titre,
   artiste, année, réponse attendue. L'outil produit la liste, pas le média.
-- Si le projet est mis en ligne, la démo publique affiche les jeux déjà en base et la
-  génération réelle est protégée par un code (`CODE_GENERATION`), sinon ma clé paie pour
-  les visiteurs.
+- Si le projet est mis en ligne, la démo publique tourne en `MODE_MODELE=rejeu` et la
+  génération réelle est protégée par un code (`CODE_GENERATION`). Un visiteur voit donc
+  de vraies sorties de modèle et toute l'application, sans qu'un seul appel soit facturé.
 
 ---
 

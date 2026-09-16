@@ -26,6 +26,14 @@ class Reglages(BaseSettings):
 
     database_url: str = "postgresql+psycopg://animation:animation@localhost:5432/animation"
 
+    # D'ou viennent les reponses du modele :
+    #   api            appel reel, facture ;
+    #   enregistrement appel reel, puis sauvegarde dans fixtures/ ;
+    #   rejeu          relecture de fixtures/, aucun appel, aucun cout.
+    # Une demo en ligne tourne en rejeu : elle montre de vraies sorties de
+    # modele sans que ma cle paie pour les visiteurs.
+    mode_modele: str = "api"
+
     # Nombre de passes de generation avant d'abandonner (cahier des charges : 3).
     max_tentatives: int = 3
 
