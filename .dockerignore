@@ -1,3 +1,8 @@
+# Volontairement sans regle « *.md » ni exception : le dossier fixtures/
+# ne contient que son README tant qu'aucune campagne n'a tourne, et une
+# exclusion large le viderait — « COPY fixtures/ » echouerait alors sur un
+# dossier vide. Quelques kilo-octets de Markdown ne valent pas ce risque.
+
 .git/
 .github/
 .venv/
@@ -7,10 +12,12 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+
+# Les tests et les captures n'ont rien a faire dans une image de production.
 tests/
 docs/
+pytest.ini
+
+# Aucun secret dans l'image : la configuration arrive par l'environnement.
 .env
 .env.*
-!.env.example
-*.md
-!fixtures/README.md

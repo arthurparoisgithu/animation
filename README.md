@@ -221,7 +221,14 @@ idempotentes : le seed met à jour les gabarits, et un jeu déjà en base est re
 que dupliqué. Tant qu'aucune fixture n'a été enregistrée, le rejeu sort proprement au lieu
 de faire échouer le déploiement.
 
-Deux détails qui comptent :
+**La génération payante est fermée par défaut.** En `MODE_MODELE=api`, un
+`CODE_GENERATION` est *obligatoire* : sans lui l'API répond 403 et explique quoi faire.
+Le défaut dangereux est celui qui coûte de l'argent — il doit être impossible à atteindre
+par oubli. En mode `rejeu` aucun appel n'est émis, donc aucun code n'est exigé et la démo
+fonctionne pour tout le monde. Le code est comparé avec `secrets.compare_digest`, dont le
+temps d'exécution ne dépend pas du nombre de caractères corrects.
+
+Deux autres détails qui comptent :
 
 - **Les hébergeurs fournissent `DATABASE_URL` sous la forme `postgres://…`.** SQLAlchemy 2
   exige un pilote explicite et refuse cette forme, donc la configuration la réécrit en
@@ -274,7 +281,7 @@ scripts/
   campagne.py        un jeu par format : enregistre les fixtures, ou les rejoue
   seed.py            insertion idempotente du catalogue
 fixtures/            réponses de modèle enregistrées (voir fixtures/README.md)
-tests/               140 tests, dont 14 contre un vrai Postgres
+tests/               143 tests, dont 17 contre un vrai Postgres
 alembic/             migrations
 ```
 
@@ -302,6 +309,9 @@ alembic/             migrations
 - **Une seule couture pour l'appel de modèle**, et trois implémentations derrière. C'est
   ce qui rend le projet démontrable sans clé et testable sans réseau, sans une seule
   ligne de code conditionnel dans le générateur ou le juge.
+- **La protection de la génération est fermée par défaut.** Une règle qui ne s'applique
+  que si on a pensé à la configurer ne protège rien : c'est l'absence de configuration
+  qui doit bloquer, pas l'inverse.
 
 ---
 
@@ -317,6 +327,11 @@ alembic/             migrations
 - Si le projet est mis en ligne, la démo publique tourne en `MODE_MODELE=rejeu` et la
   génération réelle est protégée par un code (`CODE_GENERATION`). Un visiteur voit donc
   de vraies sorties de modèle et toute l'application, sans qu'un seul appel soit facturé.
+- **`PATCH /api/jeux/{id}/favori` n'est pas authentifié** : sur la démo publique,
+  n'importe qui peut basculer une étoile. C'est assumé — l'effet est nul et ajouter une
+  authentification pour ça reviendrait à construire un système de comptes que le produit
+  n'a pas. Un vrai déploiement multi-utilisateurs demanderait cette authentification, et
+  c'est à ce moment-là qu'il faudra la faire.
 
 ---
 

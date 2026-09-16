@@ -5,6 +5,7 @@ annotations de types et des modeles Pydantic ci-dessous.
 """
 
 import json
+import secrets
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -78,8 +79,35 @@ class JeuComplet(JeuResume):
 
 
 def _verifier_code(fourni: str | None) -> None:
-    attendu = reglages().code_generation
-    if attendu and fourni != attendu:
+    """Protege la generation quand — et seulement quand — elle coute.
+
+    La regle est fermee par defaut : en mode « api », un code est
+    obligatoire. Sans cette contrainte, une instance mise en ligne avec
+    MODE_MODELE=api et sans CODE_GENERATION laisserait n'importe quel
+    visiteur declencher des appels factures sur ma cle. Le defaut
+    dangereux est celui qui coute de l'argent : il doit etre impossible a
+    atteindre par oubli.
+
+    En mode « rejeu » aucun appel n'est emis, donc aucun code n'est exige.
+    """
+    configuration = reglages()
+
+    if configuration.mode_modele != "api":
+        return
+
+    attendu = configuration.code_generation
+    if not attendu:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "Generation desactivee : cette instance appelle un modele facture "
+            "mais n'a pas de CODE_GENERATION. Renseigne-le, ou passe en "
+            "MODE_MODELE=rejeu pour une demonstration sans cout.",
+        )
+
+    # compare_digest plutot que « != » : la comparaison ne s'arrete pas au
+    # premier caractere different, donc le temps de reponse ne renseigne
+    # pas sur le nombre de caracteres corrects.
+    if not secrets.compare_digest(fourni or "", attendu):
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
             "La generation est protegee par un code sur cette instance.",
@@ -196,7 +224,7 @@ def page_accueil(request: Request, session: Session = Depends(obtenir_session)):
             "moments": list(Moment),
             "materiels": list(Materiel),
             "jeux": [JeuResume.depuis(jeu) for jeu in lister_jeux(session, limite=20)],
-            "code_requis": bool(reglages().code_generation),
+            "code_requis": reglages().mode_modele == "api",
         },
     )
 

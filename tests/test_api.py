@@ -17,8 +17,26 @@ from tests.conftest import ModeleSimule, base_requise, sortie_questions, verdict
 pytestmark = base_requise
 
 
+def configurer(monkeypatch, *, mode: str, code: str | None = None) -> None:
+    """Regle le mode du modele et vide le cache de configuration.
+
+    reglages() est mis en cache par lru_cache : sans ce vidage, une
+    variable changee apres le premier appel resterait sans effet, et le
+    test verrait la configuration d'un autre.
+    """
+    from app.config import reglages
+
+    monkeypatch.setenv("MODE_MODELE", mode)
+    if code is None:
+        monkeypatch.delenv("CODE_GENERATION", raising=False)
+    else:
+        monkeypatch.setenv("CODE_GENERATION", code)
+    reglages.cache_clear()
+
+
 @pytest.fixture
-def client():
+def client(monkeypatch):
+    from app.config import reglages
     from app.db import FabriqueSession, moteur
     from app.main import app
     from scripts.seed import lignes
@@ -34,7 +52,15 @@ def client():
         session.execute(requete.on_conflict_do_nothing(index_elements=["code"]))
         session.commit()
 
-    return TestClient(app)
+    # Le modele est simule dans ces tests : aucun appel n'est emis et rien
+    # n'est facture. On configure donc l'application comme une instance
+    # sans cout, ou aucun code n'est exige. Les tests qui verifient la
+    # protection rebasculent en mode « api » eux-memes.
+    configurer(monkeypatch, mode="rejeu")
+
+    yield TestClient(app)
+
+    reglages.cache_clear()
 
 
 @pytest.fixture
@@ -206,3 +232,50 @@ def test_en_mode_rejeu_un_theme_inedit_renvoie_503_et_non_500(client, monkeypatc
 
     assert reponse.status_code == 503
     assert "demonstration" in reponse.json()["detail"]
+
+
+# --- Protection de la generation payante ---
+
+
+def test_en_mode_api_sans_code_la_generation_est_refusee(client, monkeypatch):
+    # Le scenario redoute : instance en ligne qui appelle un modele
+    # facture, sans code. Elle doit refuser, pas ouvrir la porte.
+    configurer(monkeypatch, mode="api", code="")
+
+    reponse = client.post(
+        "/api/jeux",
+        json={"format_code": "quiz_express", "theme": "le cinema", "public": "ado"},
+    )
+
+    assert reponse.status_code == 403
+    assert "CODE_GENERATION" in reponse.json()["detail"]
+
+
+def test_en_mode_api_un_mauvais_code_est_refuse(client, monkeypatch):
+    configurer(monkeypatch, mode="api", code="le-bon-code")
+
+    reponse = client.post(
+        "/api/jeux",
+        json={
+            "format_code": "quiz_express",
+            "theme": "le cinema",
+            "public": "ado",
+            "code": "le-mauvais-code",
+        },
+    )
+
+    assert reponse.status_code == 403
+
+
+def test_en_mode_rejeu_aucun_code_n_est_exige(client, simuler, monkeypatch):
+    # Le rejeu n'emet aucun appel, donc ne coute rien : exiger un code
+    # empecherait une demo publique de fonctionner.
+    configurer(monkeypatch, mode="rejeu", code="")
+    simuler([sortie_questions(2)], [verdicts_juge(2)])
+
+    reponse = client.post(
+        "/api/jeux",
+        json={"format_code": "quiz_express", "theme": "sans code", "public": "ado", "nb_items": 2},
+    )
+
+    assert reponse.status_code == 201

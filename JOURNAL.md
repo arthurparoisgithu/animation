@@ -289,3 +289,58 @@ build` reste à faire au premier déploiement.
 139 tests passent avec base, 125 sans. La commande de release crée les trois tables et
 insère les dix formats. Le serveur répond sur le port 8080 : `/sante` pour le check de
 Fly, l'accueil, le catalogue filtré, et un 503 lisible pour un thème absent des fixtures.
+
+---
+
+## Session 4 — revue avant mise en ligne
+
+Le dépôt va devenir public et l'application accessible : j'ai relu le code en me
+demandant ce qu'un visiteur mal intentionné, ou simplement moi un soir de fatigue,
+pourrait en faire.
+
+### Le vrai problème : la protection échouait « ouvert »
+
+`_verifier_code` ne vérifiait le code *que s'il était renseigné*. Une instance déployée en
+`MODE_MODELE=api` avec un `CODE_GENERATION` oublié laissait donc n'importe quel visiteur
+déclencher des appels facturés sur ma clé — précisément ce que mon cahier des charges
+cherchait à éviter.
+
+Le défaut était à l'envers. La configuration manquante ouvrait la porte au lieu de la
+fermer. Corrigé : en mode `api`, un code est **obligatoire**, et son absence produit un
+403 qui dit quoi faire. En mode `rejeu` rien n'est exigé, puisque rien n'est facturé.
+
+La règle que j'en retiens : **une protection qui ne s'applique que si on a pensé à la
+configurer ne protège rien.** C'est l'absence de configuration qui doit bloquer.
+
+Ce changement a cassé neuf tests d'un coup — ceux qui reposaient sur l'ancien
+comportement permissif. C'était le bon signe : ils passaient tous parce que la porte était
+ouverte. Ils configurent maintenant l'application comme une vraie instance.
+
+### Deux corrections plus petites
+
+**Comparaison du code en temps constant.** `!=` s'arrête au premier caractère différent,
+donc le temps de réponse renseigne sur le nombre de caractères corrects.
+`secrets.compare_digest` ne s'arrête pas. Sur un code de démo l'enjeu est faible, mais
+c'est l'habitude qui compte, et elle ne coûte qu'un import.
+
+**Une fragilité dans le `.dockerignore`, que j'avais introduite moi-même.** J'excluais
+`*.md` avec une exception pour `fixtures/README.md`. Or `fixtures/` ne contient *que* ce
+README tant qu'aucune campagne n'a tourné : si l'exception sautait, le dossier devenait
+vide dans le contexte de build et `COPY fixtures/` échouait. Pour quelques kilo-octets de
+Markdown, et sur un build que je ne peux pas tester ici. Règle supprimée, et j'ai simulé
+le contexte de build fichier par fichier pour vérifier qu'aucun `COPY` ne pointe vers du
+vide.
+
+### Une limite assumée
+
+`PATCH /api/jeux/{id}/favori` n'est pas authentifié : sur la démo, n'importe qui peut
+basculer une étoile. Je le laisse. L'effet est nul, et ajouter une authentification pour
+ça reviendrait à construire un système de comptes que le produit n'a pas. C'est noté dans
+le README plutôt que masqué — une limite écrite vaut mieux qu'une limite découverte par
+quelqu'un d'autre.
+
+### Vérifications faites
+
+143 tests passent (17 contre Postgres). Les deux modes vérifiés sur l'application
+réellement lancée : `api` sans code répond 403 avec le message d'explication, `rejeu`
+sans code fonctionne normalement.
