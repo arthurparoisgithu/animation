@@ -1,0 +1,26 @@
+# Environnement virtuel
+.venv/
+venv/
+
+# Secrets : la cle d'API vit ici, jamais dans le code
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.Python
+
+# Tests et outils
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Editeurs / OS
+.vscode/
+.idea/
+.DS_Store
