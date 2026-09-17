@@ -4,7 +4,7 @@
 {% block contenu %}
 <div class="page">
   <header class="principal">
-    <h1>Taux de rejet par format</h1>
+    <h1>📊 Taux de rejet par format</h1>
     <nav><a href="/">Retour</a></nav>
   </header>
 
@@ -28,7 +28,7 @@
         {% for ligne in metriques %}
         <tr class="{% if ligne.escalade_conseillee %}alerte{% endif %}">
           <td>{{ ligne.nom }}</td>
-          <td class="attenue">{{ ligne.primitive }}</td>
+          <td><span class="etiquette primitive teinte-{{ ligne.primitive }}">{{ ligne.primitive }}</span></td>
           <td class="nombre">{{ ligne.items_retenus }}</td>
           <td class="nombre">{{ ligne.rejets_deterministe }}</td>
           <td class="nombre">{{ ligne.rejets_juge }}</td>

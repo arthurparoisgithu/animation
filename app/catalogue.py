@@ -13,6 +13,7 @@ CATALOGUE: list[dict] = [
     {
         "code": "quiz_express",
         "nom": "Quiz express",
+        "emoji": "⚡",
         "primitive": Primitive.question,
         "publics": ["ado", "adulte", "general"],
         "moment": Moment.cafe_apero,
@@ -27,6 +28,7 @@ CATALOGUE: list[dict] = [
     {
         "code": "quiz_minis",
         "nom": "Le quiz des minis",
+        "emoji": "🧸",
         "primitive": Primitive.question,
         "publics": ["mini", "junior"],
         "moment": Moment.veillee_enfants,
@@ -41,6 +43,7 @@ CATALOGUE: list[dict] = [
     {
         "code": "quiz_thematique",
         "nom": "Quiz à thème",
+        "emoji": "🎯",
         "primitive": Primitive.question,
         "publics": ["general"],
         "moment": Moment.soiree_adultes,
@@ -55,6 +58,7 @@ CATALOGUE: list[dict] = [
     {
         "code": "speed_quiz",
         "nom": "Speed quiz par équipes",
+        "emoji": "⏱️",
         "primitive": Primitive.question,
         "publics": ["ado", "adulte", "general"],
         "moment": Moment.soiree_adultes,
@@ -69,6 +73,7 @@ CATALOGUE: list[dict] = [
     {
         "code": "dingbats",
         "nom": "Dingbats",
+        "emoji": "🔤",
         "primitive": Primitive.enigme,
         "publics": ["junior", "ado", "adulte", "general"],
         "moment": Moment.veillee_enfants,
@@ -83,6 +88,7 @@ CATALOGUE: list[dict] = [
     {
         "code": "personnage_mystere",
         "nom": "Personnage mystère",
+        "emoji": "🕵️",
         "primitive": Primitive.enigme,
         "publics": ["junior", "ado", "adulte", "general"],
         "moment": Moment.soiree_adultes,
@@ -97,6 +103,7 @@ CATALOGUE: list[dict] = [
     {
         "code": "devinettes",
         "nom": "Devinettes",
+        "emoji": "🦉",
         "primitive": Primitive.enigme,
         "publics": ["mini", "junior"],
         "moment": Moment.veillee_enfants,
@@ -111,6 +118,7 @@ CATALOGUE: list[dict] = [
     {
         "code": "anagrammes",
         "nom": "Anagrammes",
+        "emoji": "🔡",
         "primitive": Primitive.enigme,
         "publics": ["ado", "adulte", "general"],
         "moment": Moment.cafe_apero,
@@ -125,6 +133,7 @@ CATALOGUE: list[dict] = [
     {
         "code": "le_scoop",
         "nom": "Le scoop",
+        "emoji": "📰",
         "primitive": Primitive.vrai_faux,
         "publics": ["junior", "ado", "adulte", "general"],
         "moment": Moment.soiree_adultes,
@@ -139,6 +148,7 @@ CATALOGUE: list[dict] = [
     {
         "code": "incroyable_vrai",
         "nom": "Incroyable mais vrai",
+        "emoji": "😲",
         "primitive": Primitive.vrai_faux,
         "publics": ["adulte", "general"],
         "moment": Moment.cafe_apero,
@@ -153,6 +163,7 @@ CATALOGUE: list[dict] = [
     {
         "code": "escape_game",
         "nom": "Escape game",
+        "emoji": "🗝️",
         "primitive": Primitive.enigme,
         "publics": ["junior", "ado", "adulte", "general"],
         "moment": Moment.grand_jeu,

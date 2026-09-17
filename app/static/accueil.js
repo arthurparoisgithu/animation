@@ -25,15 +25,23 @@
     carte.dataset.code = format.code;
     carte.dataset.nb = format.nb_items_defaut;
     carte.setAttribute("aria-pressed", "false");
+    // La primitive porte la couleur de la carte : sans cet attribut, une
+    // carte reconstruite apres un filtrage perdrait sa teinte.
+    carte.dataset.primitive = format.primitive;
     carte.innerHTML = `
-      <h3></h3><p></p>
+      <div class="entete">
+        <span class="emoji" aria-hidden="true"></span>
+        <h3></h3>
+      </div>
+      <p></p>
       <div class="etiquettes">
-        <span class="etiquette"></span>
+        <span class="etiquette primitive"></span>
         <span class="etiquette"></span>
         <span class="etiquette"></span>
       </div>`;
     // textContent et non innerHTML : le contenu vient de la base, on ne
     // l'injecte pas comme du HTML.
+    carte.querySelector(".emoji").textContent = format.emoji;
     carte.querySelector("h3").textContent = format.nom;
     carte.querySelector("p").textContent = format.regle_animateur;
     const etiquettes = carte.querySelectorAll(".etiquette");
@@ -51,7 +59,11 @@
     formatChoisi = carte.dataset.code;
     champNbItems.placeholder = `${carte.dataset.nb} par défaut`;
     bouton.disabled = false;
-    afficher(`Format choisi : ${carte.querySelector("h3").textContent}`);
+    afficher(
+      `Format choisi : ${carte.querySelector("h3").textContent}. ` +
+        "Renseigne un thème, puis lance la génération.",
+      "succes"
+    );
   }
 
   conteneurFormats.addEventListener("click", (evenement) => {

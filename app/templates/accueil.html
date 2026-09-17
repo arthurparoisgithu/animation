@@ -3,14 +3,36 @@
 {% block contenu %}
 <div class="page">
   <header class="principal">
-    <h1>Générateur de jeux d'animation</h1>
+    <h1>🎪 Générateur de jeux d'animation</h1>
     <nav>
       <a href="/metriques">Taux de rejet</a>
       <a href="/docs">API</a>
     </nav>
   </header>
 
-  <h2>1. Filtrer le catalogue</h2>
+  <section class="banniere">
+    <h2>Préparez la veillée de ce soir en trois clics</h2>
+    <p>
+      Choisissez un format, un thème et un public. L'outil génère les items,
+      les vérifie, et vous les rend prêts à projeter — ou à imprimer.
+    </p>
+    <div class="chiffres">
+      <div class="chiffre">
+        <strong>{{ formats|length }}</strong>
+        <span>formats au catalogue</span>
+      </div>
+      <div class="chiffre">
+        <strong>3</strong>
+        <span>primitives de contenu</span>
+      </div>
+      <div class="chiffre">
+        <strong>2</strong>
+        <span>niveaux de validation</span>
+      </div>
+    </div>
+  </section>
+
+  <h2><span class="numero">1</span> Filtrer le catalogue</h2>
   <div class="carte">
     <div class="ligne">
       <div>
@@ -37,15 +59,19 @@
     </div>
   </div>
 
-  <h2>2. Choisir un format</h2>
+  <h2><span class="numero">2</span> Choisir un format</h2>
   <div class="grille" id="formats">
     {% for format in formats %}
     <button type="button" class="carte format" data-code="{{ format.code }}"
-            data-nb="{{ format.nb_items_defaut }}" aria-pressed="false">
-      <h3>{{ format.nom }}</h3>
+            data-nb="{{ format.nb_items_defaut }}" data-primitive="{{ format.primitive }}"
+            aria-pressed="false">
+      <div class="entete">
+        <span class="emoji" aria-hidden="true">{{ format.emoji }}</span>
+        <h3>{{ format.nom }}</h3>
+      </div>
       <p>{{ format.regle_animateur }}</p>
       <div class="etiquettes">
-        <span class="etiquette">{{ format.primitive }}</span>
+        <span class="etiquette primitive">{{ format.primitive }}</span>
         <span class="etiquette">{{ format.moment }}</span>
         <span class="etiquette">{{ format.materiel }}</span>
       </div>
@@ -53,7 +79,7 @@
     {% endfor %}
   </div>
 
-  <h2>3. Générer</h2>
+  <h2><span class="numero">3</span> Générer</h2>
   <form class="carte" id="formulaire">
     <div class="ligne">
       <div>
@@ -80,10 +106,10 @@
         <button type="submit" class="action" id="lancer" disabled>Générer</button>
       </div>
     </div>
-    <p class="message attenue" id="message">Choisis d'abord un format ci-dessus.</p>
+    <p class="message" id="message">Choisis d'abord un format ci-dessus.</p>
   </form>
 
-  <h2>Jeux enregistrés</h2>
+  <h2><span class="numero">4</span> Jeux enregistrés</h2>
   <div class="grille" id="jeux">
     {% for jeu in jeux %}
     <a class="carte" href="/jeu/{{ jeu.id }}">
@@ -91,7 +117,9 @@
       <p>{{ jeu.format_code }} · {{ jeu.public.value }} · {{ jeu.nb_items }} items{% if jeu.favori %} · ★{% endif %}</p>
     </a>
     {% else %}
-    <p class="attenue">Aucun jeu pour l'instant.</p>
+    <p class="vide">
+      Aucun jeu pour l'instant. Choisissez un format ci-dessus pour en générer un.
+    </p>
     {% endfor %}
   </div>
 </div>

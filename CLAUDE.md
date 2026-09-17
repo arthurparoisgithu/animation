@@ -96,19 +96,19 @@ requête SQL avec l'opérateur de contenance plutôt que de tout passer par l'OR
 Dix formats à insérer en seed, plus un onzième ajouté après coup. Ils ne couvrent que
 trois primitives : c'est le but.
 
-| code | nom | primitive | publics | moment | matériel |
-|---|---|---|---|---|---|
-| `quiz_express` | Quiz express | question | ado, adulte, general | cafe_apero | aucun |
-| `quiz_minis` | Le quiz des minis | question | mini, junior | veillee_enfants | videoprojecteur |
-| `quiz_thematique` | Quiz à thème | question | general | soiree_adultes | videoprojecteur |
-| `speed_quiz` | Speed quiz par équipes | question | ado, adulte, general | soiree_adultes | videoprojecteur |
-| `dingbats` | Dingbats | enigme | junior, ado, adulte, general | veillee_enfants, soiree_adultes | videoprojecteur |
-| `personnage_mystere` | Personnage mystère | enigme | junior, ado, adulte, general | soiree_adultes | aucun |
-| `devinettes` | Devinettes | enigme | mini, junior | veillee_enfants | aucun |
-| `anagrammes` | Anagrammes | enigme | ado, adulte, general | cafe_apero | videoprojecteur |
-| `le_scoop` | Le scoop | vrai_faux | junior, ado, adulte, general | soiree_adultes | aucun |
-| `incroyable_vrai` | Incroyable mais vrai | vrai_faux | adulte, general | cafe_apero | aucun |
-| `escape_game` | Escape game | enigme | junior, ado, adulte, general | grand_jeu | accessoires |
+| code | nom | primitive | publics | moment | matériel | emoji |
+|---|---|---|---|---|---|---|
+| `quiz_express` | Quiz express | question | ado, adulte, general | cafe_apero | aucun | ⚡ |
+| `quiz_minis` | Le quiz des minis | question | mini, junior | veillee_enfants | videoprojecteur | 🧸 |
+| `quiz_thematique` | Quiz à thème | question | general | soiree_adultes | videoprojecteur | 🎯 |
+| `speed_quiz` | Speed quiz par équipes | question | ado, adulte, general | soiree_adultes | videoprojecteur | ⏱️ |
+| `dingbats` | Dingbats | enigme | junior, ado, adulte, general | veillee_enfants, soiree_adultes | videoprojecteur | 🔤 |
+| `personnage_mystere` | Personnage mystère | enigme | junior, ado, adulte, general | soiree_adultes | aucun | 🕵️ |
+| `devinettes` | Devinettes | enigme | mini, junior | veillee_enfants | aucun | 🦉 |
+| `anagrammes` | Anagrammes | enigme | ado, adulte, general | cafe_apero | videoprojecteur | 🔡 |
+| `le_scoop` | Le scoop | vrai_faux | junior, ado, adulte, general | soiree_adultes | aucun | 📰 |
+| `incroyable_vrai` | Incroyable mais vrai | vrai_faux | adulte, general | cafe_apero | aucun | 😲 |
+| `escape_game` | Escape game | enigme | junior, ado, adulte, general | grand_jeu | accessoires | 🗝️ |
 
 `escape_game` est arrivé après le reste, une fois le projet en place, et c'est pour ça qu'il
 est intéressant. Une chaîne d'énigmes reliées par un scénario, ça ressemble à un format à

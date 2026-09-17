@@ -15,7 +15,7 @@ from app.modeles import FormatJeu, Jeu, Rejet
 from app.schemas import Materiel, Moment, Public
 
 _SQL_FORMATS = """
-SELECT code, nom, primitive, publics, moment, materiel,
+SELECT code, nom, emoji, primitive, publics, moment, materiel,
        regle_animateur, nb_items_defaut
 FROM format_jeu
 -- Deux raisons a ces CAST. Sans type explicite, Postgres ne peut pas

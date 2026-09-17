@@ -49,6 +49,11 @@ class FormatJeu(Base):
 
     code: Mapped[str] = mapped_column(Text, primary_key=True)
     nom: Mapped[str] = mapped_column(Text, nullable=False)
+
+    # Affiche sur la carte du format. C'est de la donnee de catalogue, pas
+    # de la presentation : l'emoji decrit le jeu, il ne depend pas du theme
+    # graphique. Un format sans emoji casserait la grille, d'où le defaut.
+    emoji: Mapped[str] = mapped_column(Text, nullable=False, server_default="🎲")
     primitive: Mapped[Primitive] = mapped_column(_enum(Primitive, "primitive"), nullable=False)
 
     # Tableau Postgres et non table de liaison : ca permet d'ecrire le

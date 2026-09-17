@@ -702,3 +702,82 @@ Un test vérifie que le masquage ne laisse jamais filtrer la clé : cette sortie
   C'est la prochaine étape, et elle conditionne le taux de rejet d'`escape_game`.
 - `rechargerFormats()` fait encore un `reponse.json()` direct. Moins grave — un échec y laisse
   la liste inchangée — mais c'est la même faute.
+
+---
+
+## Session 9 — l'apparence, et ce qu'elle doit dire
+
+Le projet doit être montré à des recruteurs. L'interface d'origine — fond sombre, un accent
+orange, pas d'image — était honnête mais austère : elle ne donnait aucune envie d'ouvrir
+l'application, et surtout **elle ne racontait rien**.
+
+### Le principe retenu : la couleur porte l'architecture
+
+Le point central du projet est qu'onze formats ne produisent que trois formes de contenu.
+C'était écrit dans le README, invisible à l'écran. Chaque carte de format est maintenant
+teintée par sa primitive : bleu pour `question`, violet pour `enigme`, vert pour
+`vrai_faux`. Onze cartes, trois couleurs, et la question tombe d'elle-même.
+
+Je préfère ça à un choix esthétique arbitraire : la teinte n'est pas une décoration, c'est
+une clé de lecture. Et elle tient tout seule quand un format s'ajoute, puisqu'elle dépend de
+la primitive et non du format.
+
+### Trois écrans, trois contextes opposés
+
+- **La préparation** est claire et chaleureuse : on prépare la soirée en journée, sur un
+  ordinateur, souvent au bureau d'accueil.
+- **La projection** reste sombre. C'est le seul écran qui n'a pas bougé, et pour une raison
+  concrète : il est projeté dans une salle éteinte devant cinquante personnes.
+- **La fiche imprimée** est en noir sur blanc. Une cartouche couleur ne se dépense pas pour
+  un fond.
+
+Trois contextes, trois traitements. Le même contenu.
+
+### L'emoji est une donnée, pas une décoration
+
+Chaque format a maintenant son emoji. J'ai hésité à le coder en dur dans le gabarit — c'était
+plus rapide — et ça aurait été exactement la faute que je reproche à l'autre version : une
+table de correspondance dans le code, à modifier à chaque ajout de format.
+
+L'emoji décrit le jeu, il est affiché à l'animateur, il est saisi à la main : c'est de la
+donnée de catalogue au même titre que le nom. Donc une colonne, une migration, et le seed le
+remplit. Ajouter un format reste une ligne en base.
+
+Le test qui relit la table de `CLAUDE.md` couvre maintenant l'emoji aussi, et un autre
+vérifie qu'aucun format n'en partage un avec un voisin — deux formats identiques à l'œil
+dans la grille, c'est un animateur qui clique au hasard.
+
+### Le même piège CSS, deux fois
+
+À l'aperçu d'impression, la barre de navigation s'imprimait. J'avais pourtant bien
+`nav { display: none }` dans le bloc `@media print`.
+
+Sauf que j'avais ajouté `header.principal nav { display: flex }` dans la feuille d'écran.
+Deux sélecteurs contre un : **la spécificité gagne, le `@media print` n'y change rien.**
+Même chose pour l'étiquette de primitive, qui gardait son fond coloré parce que
+`.etiquette.primitive` bat `.etiquette`.
+
+C'est le troisième bug de ce type en trois sessions. La leçon est claire : **une règle
+d'impression doit être au moins aussi spécifique que la règle d'écran qu'elle annule.**
+Cette fois je ne me suis pas fié à l'œil — j'ai lu la valeur calculée dans le navigateur :
+
+```js
+getComputedStyle(document.querySelector('header.principal nav')).display  // "none"
+```
+
+### Vérifié
+
+171 tests, dont 21 contre Postgres. Migration `0002` jouée sur une base déjà peuplée. Les
+quatre pages passées au navigateur, aucune erreur console. Le filtrage vérifié
+spécifiquement : il reconstruit les cartes en JavaScript, donc l'emoji et la primitive
+doivent survivre au parcours API → carte, ce qui n'a rien d'automatique. Projection toujours
+sombre, fiche toujours en noir sur blanc, avec les valeurs calculées lues plutôt que
+regardées. Captures régénérées.
+
+### Reste à faire
+
+- Toujours pas de génération réelle : la clé est refusée, et `tester-cle.bat` attend d'être
+  lancé pour dire pourquoi.
+- Les trois couleurs de primitive n'apparaissent nulle part en légende explicite. Pour
+  l'instant elles se déduisent des étiquettes ; à voir si un lecteur extérieur fait le lien
+  sans qu'on le lui dise.

@@ -19,6 +19,7 @@ def lignes() -> list[dict]:
         {
             "code": format_jeu["code"],
             "nom": format_jeu["nom"],
+            "emoji": format_jeu["emoji"],
             "primitive": format_jeu["primitive"].value,
             "publics": format_jeu["publics"],
             "moment": format_jeu["moment"].value,
@@ -44,7 +45,7 @@ def main() -> int:
             set_={
                 colonne: requete.excluded[colonne]
                 for colonne in (
-                    "nom", "primitive", "publics", "moment", "materiel",
+                    "nom", "emoji", "primitive", "publics", "moment", "materiel",
                     "regle_animateur", "gabarit_prompt", "nb_items_defaut",
                 )
             },

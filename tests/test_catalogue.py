@@ -58,6 +58,7 @@ def _table_du_cahier_des_charges() -> dict[str, dict]:
             "publics": [p.strip() for p in cellules[3].split(",")],
             "moments": [m.strip() for m in cellules[4].split(",")],
             "materiel": cellules[5],
+            "emoji": cellules[6],
         }
     return table
 
@@ -74,6 +75,7 @@ def test_le_catalogue_du_code_correspond_au_cahier_des_charges():
         assert format_jeu["primitive"].value == spec["primitive"], code
         assert format_jeu["publics"] == spec["publics"], code
         assert format_jeu["materiel"].value == spec["materiel"], code
+        assert format_jeu["emoji"] == spec["emoji"], code
         # Deux formats se jouent a plusieurs moments dans la table ;
         # le catalogue en retient un, qui doit figurer parmi eux.
         assert format_jeu["moment"].value in spec["moments"], code
@@ -121,3 +123,15 @@ def test_un_format_sans_complement_recoit_le_gabarit_nu():
     assert gabarit_du_format("devinettes", Primitive.enigme) == (
         GABARIT_PAR_PRIMITIVE[Primitive.enigme]
     )
+
+
+def test_chaque_format_a_son_propre_emoji():
+    """L'emoji est de la donnee de catalogue, comme le nom.
+
+    Deux formats qui partagent le meme emoji se ressemblent a l'ecran alors
+    qu'ils ne se jouent pas pareil, et l'animateur qui prepare sa soiree
+    balaie la grille du regard sans lire les titres.
+    """
+    emojis = [format_jeu["emoji"] for format_jeu in CATALOGUE]
+    assert all(emojis), "un format sans emoji"
+    assert len(emojis) == len(set(emojis)), "deux formats partagent un emoji"

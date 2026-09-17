@@ -307,13 +307,18 @@ La machine dort quand personne ne consulte la démo (`auto_stop_machines`), et r
 Le catalogue se filtre par public, moment de la journée et matériel disponible — ce sont
 les trois contraintes réelles d'un animateur qui prépare une soirée.
 
+**La couleur porte l'architecture.** Chaque format est teinté par sa primitive : bleu pour
+`question`, violet pour `enigme`, vert pour `vrai_faux`. Onze formats, trois couleurs — le
+point central du projet se voit avant qu'on l'explique. L'emoji, lui, est une colonne du
+catalogue au même titre que le nom : ajouter un format reste une ligne en base.
+
 ![Accueil](docs/captures/accueil.png)
 
-Le mode projection est fait pour un vidéoprojecteur : fond sombre, texte dimensionné en
-unités relatives à la largeur d'écran, flèches pour naviguer, espace pour révéler la
-réponse, `F` pour le plein écran.
+Le mode projection est le seul écran resté sombre, et pour une raison concrète : il est
+projeté dans une salle éteinte. Texte dimensionné en unités relatives à la largeur d'écran,
+flèches pour naviguer, espace pour révéler la réponse, `F` pour le plein écran.
 
-![Projection d'un dingbat](docs/captures/projection-dingbats.png)
+![Projection d'une énigme d'escape game](docs/captures/projection-escape-game.png)
 
 Chaque jeu a aussi sa version papier. L'animateur n'est pas toujours derrière un écran :
 une feuille dans la poche, c'est ce qui reste quand le vidéoprojecteur ne démarre pas. La
@@ -334,6 +339,7 @@ app/
   validation.py      niveau 1 : les règles déterministes, fonctions pures
   gabarits.py        un gabarit de prompt par primitive
   catalogue.py       les onze formats du catalogue, source de vérité du seed
+  static/style.css   une teinte par primitive ; sombre en projection, noir sur blanc à l'impression
   transport.py       la couture : appel réel, enregistré, ou rejoué depuis fixtures/
   modele.py          appel Anthropic et extraction du JSON — tout le réseau est ici
   juge.py            niveau 2 : exactitude factuelle et adéquation au public
@@ -349,7 +355,7 @@ scripts/
 fixtures/            réponses de modèle enregistrées (voir fixtures/README.md)
 docker-compose.yml   la base et l'application, câblées ensemble
 demarrer.bat         démarrage en double-clic sous Windows (+ arreter, journal)
-tests/               150 tests, dont 19 contre un vrai Postgres
+tests/               171 tests, dont 21 contre un vrai Postgres
 alembic/             migrations
 ```
 

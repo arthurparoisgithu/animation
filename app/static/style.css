@@ -1,13 +1,47 @@
+/* Interface du generateur de jeux d'animation.
+ *
+ * Trois regles de conception, dans cet ordre :
+ *
+ * 1. La couleur porte l'idee du projet. Chaque format est teinte par sa
+ *    primitive — bleu pour question, violet pour enigme, vert pour
+ *    vrai_faux. Onze formats, trois couleurs : l'architecture se voit
+ *    avant qu'on l'explique.
+ * 2. L'ecran de preparation est clair et chaleureux, parce qu'on prepare
+ *    une soiree en journee. Le mode projection reste sombre, parce qu'on
+ *    projette dans le noir. Ce sont deux contextes opposes.
+ * 3. La fiche imprimee est en noir sur blanc : une cartouche couleur ne se
+ *    depense pas pour un fond.
+ */
+
 :root {
-  --fond: #12141a;
-  --carte: #1b1e27;
-  --bord: #2c3040;
-  --texte: #e8eaf0;
-  --attenue: #9aa0b4;
-  --accent: #ffb454;
-  --vert: #6ec07a;
-  --rouge: #e06c6c;
-  --rayon: 10px;
+  --fond: #f6f4ef;
+  --fond-motif: #efece4;
+  --surface: #ffffff;
+  --bord: #e3ded2;
+  --texte: #23201b;
+  --attenue: #6f6a60;
+
+  --accent: #e2662b;
+  --accent-sombre: #c2501c;
+  --accent-clair: #fdf0e7;
+
+  --vert: #1f8a5f;
+  --vert-clair: #e8f6ef;
+  --rouge: #c53d2e;
+  --rouge-clair: #fdecea;
+
+  /* Une teinte par primitive : c'est la cle de lecture de l'interface. */
+  --question: #2563c9;
+  --question-clair: #e8efFb;
+  --enigme: #7c46c9;
+  --enigme-clair: #f1eafb;
+  --vrai-faux: #0f8577;
+  --vrai-faux-clair: #e5f4f2;
+
+  --rayon: 14px;
+  --rayon-petit: 9px;
+  --ombre: 0 1px 2px rgba(35, 32, 27, .05), 0 6px 18px rgba(35, 32, 27, .06);
+  --ombre-haute: 0 2px 4px rgba(35, 32, 27, .06), 0 14px 32px rgba(35, 32, 27, .12);
 }
 
 * { box-sizing: border-box; }
@@ -15,105 +49,374 @@
 body {
   margin: 0;
   background: var(--fond);
+  /* Un damier tres pale : de la matiere sans bruit, et rien a telecharger. */
+  background-image:
+    radial-gradient(circle at 1px 1px, var(--fond-motif) 1px, transparent 0);
+  background-size: 22px 22px;
   color: var(--texte);
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  line-height: 1.55;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
 }
 
-a { color: var(--accent); }
+a { color: var(--accent-sombre); }
 
-.page { max-width: 980px; margin: 0 auto; padding: 24px 16px 64px; }
+.page { max-width: 1060px; margin: 0 auto; padding: 0 20px 72px; }
+
+/* --- En-tete --- */
 
 header.principal {
-  border-bottom: 1px solid var(--bord);
-  margin-bottom: 28px;
-  padding-bottom: 16px;
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: 16px;
   flex-wrap: wrap;
+  padding: 26px 0 20px;
+  margin-bottom: 26px;
+  border-bottom: 2px solid var(--bord);
 }
-header.principal h1 { font-size: 1.35rem; margin: 0; }
-header.principal nav a { margin-left: 16px; font-size: .92rem; }
+header.principal h1 {
+  font-size: 1.3rem;
+  margin: 0;
+  letter-spacing: -.01em;
+}
+header.principal nav { display: flex; align-items: center; gap: 18px; }
+header.principal nav a, header.principal nav button.lien {
+  font-size: .92rem;
+  font-weight: 600;
+  color: var(--attenue);
+  text-decoration: none;
+}
+header.principal nav a:hover, header.principal nav button.lien:hover {
+  color: var(--accent-sombre);
+}
 
-h2 { font-size: 1.1rem; margin: 32px 0 12px; }
+/* --- Banniere d'accueil --- */
+
+.banniere {
+  background: linear-gradient(135deg, #f5a03c 0%, var(--accent) 52%, #d9456b 100%);
+  color: #fff;
+  border-radius: var(--rayon);
+  padding: 30px 32px;
+  margin-bottom: 34px;
+  box-shadow: var(--ombre-haute);
+}
+.banniere h2 {
+  margin: 0 0 8px;
+  font-size: 1.55rem;
+  color: #fff;
+  letter-spacing: -.015em;
+}
+.banniere p { margin: 0; max-width: 62ch; color: rgba(255, 255, 255, .93); }
+.banniere .chiffres {
+  display: flex;
+  gap: 26px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, .28);
+}
+.banniere .chiffre strong { display: block; font-size: 1.5rem; line-height: 1.2; }
+.banniere .chiffre span { font-size: .82rem; color: rgba(255, 255, 255, .88); }
+
+/* --- Titres de section, numerotes --- */
+
+h2 {
+  font-size: 1.05rem;
+  margin: 34px 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: -.01em;
+}
+h2 .numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: .82rem;
+  flex: 0 0 auto;
+}
+
+/* --- Cartes --- */
 
 .carte {
-  background: var(--carte);
+  background: var(--surface);
   border: 1px solid var(--bord);
   border-radius: var(--rayon);
-  padding: 16px;
+  padding: 20px;
+  box-shadow: var(--ombre);
 }
 
-/* Une carte cliquable reste une carte : pas de soulignement de lien. */
-a.carte { text-decoration: none; color: inherit; display: block; }
-a.carte:hover, a.carte:focus-visible { border-color: var(--accent); outline: none; }
-a.carte h3 { margin: 0 0 6px; font-size: 1rem; color: var(--accent); }
+a.carte { text-decoration: none; color: inherit; display: block; transition: transform .12s, box-shadow .12s; }
+a.carte:hover, a.carte:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: var(--ombre-haute);
+  outline: none;
+}
+a.carte h3 { margin: 0 0 6px; font-size: 1rem; color: var(--accent-sombre); }
 a.carte p { margin: 0; color: var(--attenue); font-size: .85rem; }
 
 .grille {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(258px, 1fr));
+  gap: 14px;
 }
 
-.format { cursor: pointer; text-align: left; width: 100%; color: inherit; font: inherit; }
-.format:hover, .format:focus-visible { border-color: var(--accent); outline: none; }
-.format[aria-pressed="true"] { border-color: var(--accent); background: #232735; }
-.format h3 { margin: 0 0 6px; font-size: 1rem; }
-.format p { margin: 0; color: var(--attenue); font-size: .85rem; }
+/* --- Carte d'un format, teintee par sa primitive --- */
 
-.etiquettes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.format {
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  position: relative;
+  padding: 18px 18px 16px 20px;
+  overflow: hidden;
+  transition: transform .12s, box-shadow .12s, border-color .12s;
+}
+/* Le bandeau de couleur : c'est lui qui dit la primitive. */
+.format::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: var(--teinte, var(--accent));
+}
+.format[data-primitive="question"]  { --teinte: var(--question);  --teinte-clair: var(--question-clair); }
+.format[data-primitive="enigme"]    { --teinte: var(--enigme);    --teinte-clair: var(--enigme-clair); }
+.format[data-primitive="vrai_faux"] { --teinte: var(--vrai-faux); --teinte-clair: var(--vrai-faux-clair); }
+
+.format:hover, .format:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: var(--ombre-haute);
+  border-color: var(--teinte);
+  outline: none;
+}
+.format[aria-pressed="true"] {
+  border-color: var(--teinte);
+  background: var(--teinte-clair);
+  box-shadow: 0 0 0 2px var(--teinte) inset, var(--ombre);
+}
+.format { display: flex; flex-direction: column; }
+.format p { flex: 1 1 auto; }
+.format .entete { display: flex; align-items: center; gap: 11px; }
+.format .emoji {
+  font-size: 1.6rem;
+  line-height: 1.1;
+  flex: 0 0 auto;
+}
+.format h3 { margin: 0; font-size: 1rem; letter-spacing: -.01em; }
+.format p {
+  margin: 9px 0 0;
+  color: var(--attenue);
+  font-size: .84rem;
+  line-height: 1.5;
+}
+
+/* --- Etiquettes --- */
+
+.etiquettes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
 .etiquette {
   font-size: .72rem;
-  border: 1px solid var(--bord);
+  font-weight: 600;
   border-radius: 999px;
-  padding: 2px 9px;
+  padding: 3px 10px;
+  background: var(--fond-motif);
   color: var(--attenue);
+  white-space: nowrap;
+}
+/* L'etiquette de primitive reprend la couleur : la legende est partout. */
+.etiquette.primitive {
+  background: var(--teinte-clair, var(--accent-clair));
+  color: var(--teinte, var(--accent-sombre));
 }
 
-label { display: block; font-size: .82rem; color: var(--attenue); margin-bottom: 4px; }
+/* --- Formulaire --- */
+
+label {
+  display: block;
+  font-size: .78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--attenue);
+  margin-bottom: 5px;
+}
 input, select, button {
   font: inherit;
-  background: #171a22;
+  background: var(--surface);
   color: var(--texte);
   border: 1px solid var(--bord);
-  border-radius: 8px;
-  padding: 9px 11px;
+  border-radius: var(--rayon-petit);
+  padding: 10px 12px;
+  width: 100%;
 }
-input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+input::placeholder { color: #a8a296; }
+input:focus, select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
 
-.ligne { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
-.ligne > div { flex: 1 1 160px; }
+.ligne { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; }
+.ligne > div { flex: 1 1 165px; }
 
 button.action {
   background: var(--accent);
-  color: #1a1206;
+  color: #fff;
   border: none;
-  font-weight: 600;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 11px 26px;
+  box-shadow: 0 2px 8px rgba(226, 102, 43, .3);
+  transition: background .12s, transform .12s;
+}
+button.action:hover:not(:disabled) { background: var(--accent-sombre); transform: translateY(-1px); }
+button.action:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+
+button.lien {
+  background: none;
+  border: none;
+  padding: 0;
+  width: auto;
+  font: inherit;
   cursor: pointer;
 }
-button.action:disabled { opacity: .5; cursor: progress; }
+button.lien:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
-.message { margin-top: 14px; font-size: .9rem; }
-.message.erreur { color: var(--rouge); }
-.message.succes { color: var(--vert); }
-.message ul { margin: 8px 0 0; padding-left: 20px; color: var(--attenue); }
+/* --- Messages --- */
+
+.message {
+  margin: 16px 0 0;
+  font-size: .9rem;
+  padding: 11px 14px;
+  border-radius: var(--rayon-petit);
+  background: var(--fond-motif);
+  color: var(--attenue);
+}
+.message.erreur {
+  background: var(--rouge-clair);
+  color: var(--rouge);
+  border-left: 3px solid var(--rouge);
+}
+.message.succes {
+  background: var(--vert-clair);
+  color: var(--vert);
+  border-left: 3px solid var(--vert);
+}
+.message ul { margin: 9px 0 0; padding-left: 20px; }
+
+/* --- Tableau des metriques --- */
 
 table { width: 100%; border-collapse: collapse; font-size: .9rem; }
-th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--bord); }
-th { color: var(--attenue); font-weight: 500; }
+th, td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--bord); }
+th {
+  color: var(--attenue);
+  font-size: .74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+tbody tr:last-child td { border-bottom: none; }
 td.nombre { text-align: right; font-variant-numeric: tabular-nums; }
-tr.alerte td { color: var(--rouge); }
+tr.alerte td { background: var(--rouge-clair); color: var(--rouge); font-weight: 600; }
 
-ol.items { padding-left: 22px; }
-ol.items li { margin-bottom: 18px; }
-ol.items .bonne { color: var(--vert); }
+/* --- Liste des items d'un jeu --- */
+
+ol.items { padding-left: 0; list-style: none; counter-reset: item; margin: 0; }
+ol.items > li {
+  counter-increment: item;
+  position: relative;
+  padding: 0 0 20px 44px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--bord);
+}
+ol.items > li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+ol.items > li::before {
+  content: counter(item);
+  position: absolute;
+  left: 0;
+  top: 1px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--teinte-clair, var(--accent-clair));
+  color: var(--teinte, var(--accent-sombre));
+  font-size: .84rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+ol.items ul { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 6px; }
+ol.items ul li {
+  padding: 7px 12px;
+  border: 1px solid var(--bord);
+  border-radius: var(--rayon-petit);
+  font-size: .92rem;
+}
+ol.items .bonne {
+  color: var(--vert);
+  font-weight: 600;
+  background: var(--vert-clair);
+  border-color: #bde3d1;
+}
+p.bonne {
+  color: var(--vert);
+  font-weight: 600;
+  background: var(--vert-clair);
+  border-radius: var(--rayon-petit);
+  padding: 7px 12px;
+  display: inline-block;
+  margin: 10px 0 0;
+}
 .attenue { color: var(--attenue); font-size: .88rem; }
 
-/* --- Mode projection : gros texte, fond sombre, rien d'autre a l'ecran --- */
-body.projection { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+/* Le bloc teinte par la primitive du jeu affiche. */
+.teinte-question  { --teinte: var(--question);  --teinte-clair: var(--question-clair); }
+.teinte-enigme    { --teinte: var(--enigme);    --teinte-clair: var(--enigme-clair); }
+.teinte-vrai_faux { --teinte: var(--vrai-faux); --teinte-clair: var(--vrai-faux-clair); }
+
+/* Bandeau d'identite d'un jeu, repris de la carte du format. */
+.entete-jeu { display: flex; align-items: center; gap: 14px; }
+.entete-jeu .emoji {
+  font-size: 2rem;
+  width: 54px;
+  height: 54px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--rayon-petit);
+  background: var(--teinte-clair, var(--accent-clair));
+}
+
+.vide {
+  text-align: center;
+  padding: 34px 20px;
+  color: var(--attenue);
+  border: 2px dashed var(--bord);
+  border-radius: var(--rayon);
+}
+
+/* --- Mode projection : gros texte, fond sombre, rien d'autre a l'ecran ---
+   Le seul ecran du projet qui reste sombre, et pour une raison concrete :
+   il est projete dans une salle eteinte, devant cinquante personnes. */
+
+body.projection {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: #12141a;
+  background-image: none;
+  color: #e8eaf0;
+}
 .scene {
   flex: 1;
   display: flex;
@@ -137,26 +440,28 @@ body.projection { display: flex; flex-direction: column; height: 100vh; overflow
 }
 .scene .propositions li {
   font-size: clamp(1.1rem, 2.6vw, 2rem);
-  border: 2px solid var(--bord);
+  border: 2px solid #2c3040;
   border-radius: 14px;
   padding: 2vh 2vw;
+  background: none;
+  color: inherit;
 }
-.scene .propositions li.revelee { border-color: var(--vert); color: var(--vert); }
-.scene .revelation { font-size: clamp(1.1rem, 2.4vw, 1.9rem); color: var(--accent); margin: 0; }
+.scene .propositions li.revelee { border-color: #6ec07a; color: #6ec07a; background: none; }
+.scene .revelation { font-size: clamp(1.1rem, 2.4vw, 1.9rem); color: #ffb454; margin: 0; }
 .scene .revelation[hidden] { display: none; }
-.scene .secondaire { font-size: clamp(.95rem, 1.6vw, 1.25rem); color: var(--attenue); margin: 0; }
+.scene .secondaire { font-size: clamp(.95rem, 1.6vw, 1.25rem); color: #9aa0b4; margin: 0; }
 
 .barre {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  border-top: 1px solid var(--bord);
-  color: var(--attenue);
+  border-top: 1px solid #2c3040;
+  color: #9aa0b4;
   font-size: .85rem;
 }
 .barre kbd {
-  border: 1px solid var(--bord);
+  border: 1px solid #2c3040;
   border-radius: 5px;
   padding: 1px 6px;
   font-size: .8rem;
@@ -164,6 +469,8 @@ body.projection { display: flex; flex-direction: column; height: 100vh; overflow
 
 @media (max-width: 720px) {
   .scene .propositions { grid-template-columns: 1fr; }
+  .banniere { padding: 24px 20px; }
+  .banniere h2 { font-size: 1.3rem; }
 }
 
 /* --- Fiche imprimable : la version papier de la page d'un jeu ---
@@ -173,37 +480,26 @@ body.projection { display: flex; flex-direction: column; height: 100vh; overflow
 
 .impression-seulement { display: none; }
 
-/* Un bouton qui declenche une action de page, pas un lien : il ne mene
-   nulle part, donc ce n'est pas un <a>. Reste qu'il doit ressembler aux
-   entrees de navigation qui l'entourent. */
-button.lien {
-  background: none;
-  border: none;
-  padding: 0;
-  margin-left: 16px;
-  font: inherit;
-  font-size: .92rem;
-  color: var(--accent);
-  text-decoration: underline;
-  cursor: pointer;
-}
-button.lien:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-
 @media print {
   @page { margin: 16mm; }
 
-  /* Fond sombre a l'ecran, encre noire sur papier : imprimer le theme de
-     l'interface viderait une cartouche par fiche. */
-  body { background: #fff; color: #000; }
+  /* Ni fond colore ni ombres a l'impression : ca vide une cartouche par
+     fiche sans rien apporter sur le papier. */
+  body { background: #fff; background-image: none; color: #000; }
   .page { max-width: none; padding: 0; }
 
-  nav, button.lien { display: none; }
+  header.principal nav, nav, button.lien, .banniere { display: none; }
   .impression-seulement { display: block; }
 
-  header.principal { border-bottom: 1px solid #000; margin-bottom: 18px; }
-  .carte { background: none; border: 1px solid #999; }
-  .etiquette { border-color: #999; color: #000; }
+  header.principal { border-bottom: 1px solid #000; margin-bottom: 18px; padding-top: 0; }
+  .carte { background: none; border: 1px solid #999; box-shadow: none; }
+  .etiquette, .etiquette.primitive {
+    border: 1px solid #999;
+    background: none;
+    color: #000;
+  }
   .attenue { color: #333; }
+  .entete-jeu .emoji { background: none; }
 
   .avertissement-fiche {
     border: 1px solid #000;
@@ -215,14 +511,18 @@ button.lien:focus-visible { outline: 2px solid var(--accent); outline-offset: 3p
 
   /* Le vert ne se distingue pas du gris en noir et blanc : sur papier, la
      bonne reponse se signale par un signe et non par une couleur. */
-  /* ol.items .bonne est plus specifique que .bonne : sans le meme
-     selecteur ici, la regle de l'ecran gagne et le vert part a l'encre. */
-  ol.items .bonne { color: #000; font-weight: 700; }
-  ol.items .bonne::before { content: "\2714\00a0"; }
+  ol.items .bonne, p.bonne {
+    color: #000;
+    font-weight: 700;
+    background: none;
+    border-color: #999;
+  }
+  ol.items .bonne::before, p.bonne::before { content: "\2714\00a0"; }
+  ol.items > li::before { background: none; color: #000; border: 1px solid #999; }
 
   /* Une question coupee en deux par un saut de page est inutilisable en
      animation : on la garde entiere, quitte a gacher du papier. */
-  ol.items li { break-inside: avoid; page-break-inside: avoid; margin-bottom: 14px; }
+  ol.items > li { break-inside: avoid; page-break-inside: avoid; margin-bottom: 14px; }
   h2 { break-after: avoid; page-break-after: avoid; }
 
   a { color: #000; text-decoration: none; }

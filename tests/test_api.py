@@ -87,6 +87,15 @@ def test_le_catalogue_contient_les_onze_formats(client):
     assert len(formats) == 11
 
 
+def test_le_catalogue_expose_l_emoji_de_chaque_format(client):
+    """Le filtrage reconstruit les cartes en JavaScript depuis cette reponse."""
+    formats = client.get("/api/formats").json()
+    assert all(f["emoji"] for f in formats)
+    assert {f["emoji"] for f in formats} == {f["emoji"] for f in formats}
+    escape = next(f for f in formats if f["code"] == "escape_game")
+    assert escape["emoji"] == "🗝️"
+
+
 def test_le_catalogue_se_filtre_par_public(client):
     # C'est la requete qui utilise l'operateur de contenance @>.
     codes = {f["code"] for f in client.get("/api/formats?public=mini").json()}

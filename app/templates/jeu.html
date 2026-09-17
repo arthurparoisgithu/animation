@@ -2,7 +2,7 @@
 {% block titre %}{{ jeu.theme }} — {{ format.nom }}{% endblock %}
 
 {% block contenu %}
-<div class="page">
+<div class="page teinte-{{ format.primitive.value }}">
   <header class="principal">
     <h1>{{ format.nom }} — {{ jeu.theme }}</h1>
     <nav>
@@ -13,13 +13,18 @@
   </header>
 
   <div class="carte">
-    <div class="etiquettes">
-      <span class="etiquette">{{ format.primitive.value }}</span>
-      <span class="etiquette">public : {{ jeu.public.value }}</span>
-      <span class="etiquette">{{ jeu.contenu|length }} items</span>
-      <span class="etiquette">{{ jeu.cree_le.strftime("%d/%m/%Y") }}</span>
+    <div class="entete-jeu">
+      <span class="emoji" aria-hidden="true">{{ format.emoji }}</span>
+      <div>
+        <div class="etiquettes" style="margin-top:0">
+          <span class="etiquette primitive">{{ format.primitive.value }}</span>
+          <span class="etiquette">public : {{ jeu.public.value }}</span>
+          <span class="etiquette">{{ jeu.contenu|length }} items</span>
+          <span class="etiquette">{{ jeu.cree_le.strftime("%d/%m/%Y") }}</span>
+        </div>
+      </div>
     </div>
-    <p class="attenue" style="margin-top:12px">{{ format.regle_animateur }}</p>
+    <p class="attenue" style="margin-top:14px">{{ format.regle_animateur }}</p>
     {# La feuille porte les solutions : elle ne se pose pas sur la table
        des joueurs. Ca ne se voit qu'a l'impression, la ou ca compte. #}
     <p class="impression-seulement avertissement-fiche">
