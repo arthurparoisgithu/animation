@@ -676,6 +676,26 @@ lancée avec une clé invalide, formulaire rempli au navigateur, message lu en r
 bouton. `Clé d'API refusée par Anthropic. Vérifie la ligne ANTHROPIC_API_KEY du fichier .env,
 puis redémarre l'application.`
 
+### Un diagnostic, parce que « clé refusée » ne suffisait pas
+
+Message affiché, crédit présent, clé remplacée — et toujours un refus. Le message disait
+*quoi*, pas *pourquoi* : une clé vide, l'exemple non remplacé, des guillemets autour, une
+espace en tête, un début tronqué et une clé réellement révoquée donnent **tous le même 401**,
+avec six corrections différentes.
+
+D'où `scripts/tester_cle.py` et son `tester-cle.bat`. Il lit la configuration par le même
+chemin que l'application — donc depuis le conteneur, ce qui répond aussi à « le .env est-il
+vraiment arrivé jusque-là » — décrit ce qu'il trouve sans afficher le secret, écarte les cinq
+accidents de copier-coller avant tout appel, puis fait un appel d'un token et affiche le
+message brut d'Anthropic.
+
+Deux choses que j'ai soignées : la clé est masquée mais garde ses quatre derniers caractères,
+sinon on ne sait pas laquelle de ses clés on regarde ; et la sortie affiche l'identifiant du
+modèle, parce qu'un modèle inexistant produirait un échec qu'on attribuerait à la clé.
+
+Un test vérifie que le masquage ne laisse jamais filtrer la clé : cette sortie est faite pour
+être copiée-collée dans une conversation.
+
 ### Reste à faire
 
 - Toujours pas de génération réussie de bout en bout : il faut une clé valide avec du crédit.

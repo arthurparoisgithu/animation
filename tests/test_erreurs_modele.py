@@ -131,3 +131,47 @@ def test_les_motifs_affiches_sont_en_francais_accentue():
 
     for motif in motifs:
         assert accentues & set(motif.lower()), f"motif sans aucun accent : {motif}"
+
+
+# --- Diagnostic de la cle, avant tout appel ---
+
+from scripts.tester_cle import diagnostiquer
+
+
+def test_une_cle_bien_formee_ne_declenche_aucun_probleme():
+    assert diagnostiquer("sk-ant-api03-" + "x" * 40) == []
+
+
+@pytest.mark.parametrize(
+    "cle, attendu",
+    [
+        ("", "vide"),
+        ("sk-ant-...", "exemple"),
+        ('"sk-ant-api03-xxxx"', "guillemets"),
+        ("  sk-ant-api03-xxxx", "espace"),
+        ("api03-xxxx", "sk-ant-"),
+    ],
+)
+def test_chaque_accident_de_copier_coller_est_nomme(cle, attendu):
+    """Les cinq façons de rater un copier-coller de clé.
+
+    Chacune donne le meme symptome cote API — un 401 — alors que la
+    correction est differente a chaque fois. Les distinguer avant l'appel
+    evite de chercher au mauvais endroit.
+    """
+    problemes = diagnostiquer(cle)
+    assert problemes, f"aucun probleme detecte pour {cle!r}"
+    assert any(attendu in probleme for probleme in problemes), problemes
+
+
+def test_le_diagnostic_ne_revele_jamais_la_cle():
+    """Ce script s'execute dans un terminal dont on copie la sortie."""
+    from scripts.tester_cle import _masquer
+
+    secrete = "sk-ant-api03-" + "S" * 40 + "FIN1"
+    masquee = _masquer(secrete)
+
+    assert secrete not in masquee
+    assert "S" * 20 not in masquee
+    # Mais assez pour que l'utilisateur reconnaisse laquelle de ses cles c'est.
+    assert masquee.endswith("FIN1")

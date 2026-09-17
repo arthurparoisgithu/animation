@@ -165,6 +165,7 @@ générés survivent aux redémarrages — ils sont dans un volume Docker, et il
 | `demarrer.bat` | Vérifie Docker, crée le `.env` et l'ouvre s'il manque la clé, démarre, ouvre le navigateur. |
 | `arreter.bat` | Arrête tout, en conservant les jeux déjà générés. |
 | `journal.bat` | Affiche les messages de l'application, à copier en cas de problème. |
+| `tester-cle.bat` | Teste la clé d'API telle que l'application la lit, sans lancer le reste. |
 
 ### À la main, sans Docker
 
