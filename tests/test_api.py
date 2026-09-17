@@ -238,6 +238,40 @@ def test_l_escape_game_traverse_tout_le_chemin_sans_code_dedie(client, simuler):
     assert set(corps["contenu"][0]) == {"enonce", "solution", "indice"}
 
 
+def test_un_appel_de_modele_qui_echoue_renvoie_du_json_lisible(client, monkeypatch):
+    """Le cas vecu : cle refusee, et l'ecran affichait « Unexpected token I ».
+
+    L'application repondait 500 « Internal Server Error » en texte brut, que
+    la page tentait de lire comme du JSON. Deux defauts d'un coup : la cause
+    etait perdue cote serveur, et illisible cote navigateur.
+    """
+    import anthropic
+    import httpx2 as httpx
+
+    from app import modele as module_modele
+
+    def cle_refusee(prompt, *, modele, max_tokens=4096):
+        requete = httpx.Request("POST", "https://api.anthropic.com/v1/messages")
+        raise anthropic.AuthenticationError(
+            "Error code: 401", response=httpx.Response(401, request=requete), body=None
+        )
+
+    # On remplace le transport, pas appeler() : c'est appeler() qui porte la
+    # traduction, et le but du test est justement de la traverser. Patcher
+    # generateur.appeler court-circuiterait ce qu'on veut verifier.
+    monkeypatch.setattr(module_modele, "transport_actif", lambda: cle_refusee)
+
+    reponse = client.post(
+        "/api/jeux",
+        json={"format_code": "quiz_express", "theme": "la cle", "public": "ado", "nb_items": 2},
+    )
+
+    # 502 : le service en amont a echoue, l'application n'est pas cassee.
+    assert reponse.status_code == 502
+    assert "application/json" in reponse.headers["content-type"]
+    assert "ANTHROPIC_API_KEY" in reponse.json()["detail"]
+
+
 def test_la_page_d_un_jeu_porte_la_fiche_imprimable(client, simuler):
     """La feuille que l'animateur emporte quand le videoprojecteur lache."""
     simuler([sortie_questions(2)], [verdicts_juge(2)])
@@ -288,7 +322,7 @@ def test_en_mode_rejeu_un_theme_inedit_renvoie_503_et_non_500(client, monkeypatc
     )
 
     assert reponse.status_code == 503
-    assert "demonstration" in reponse.json()["detail"]
+    assert "démonstration" in reponse.json()["detail"]
 
 
 # --- Protection de la generation payante ---

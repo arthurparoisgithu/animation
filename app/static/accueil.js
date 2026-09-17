@@ -105,7 +105,24 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(corps),
       });
-      const resultat = await reponse.json();
+
+      // Lire le texte puis tenter le JSON, et non l'inverse. Une panne
+      // serveur repond « Internal Server Error » en texte brut : un
+      // reponse.json() direct echoue alors sur la premiere lettre et
+      // l'utilisateur recoit « Unexpected token 'I' » au lieu de la cause.
+      const brut = await reponse.text();
+      let resultat = null;
+      try {
+        resultat = JSON.parse(brut);
+      } catch {
+        afficher(
+          `Le serveur a repondu une erreur ${reponse.status}. ` +
+            `Detail : ${brut.slice(0, 200) || "aucun"}. ` +
+            "Lance journal.bat pour voir le message complet.",
+          "erreur"
+        );
+        return;
+      }
 
       if (!reponse.ok) {
         const detail = resultat.detail;

@@ -590,3 +590,95 @@ trois `.bat` sont en ASCII pur et en CRLF, et chaque `goto` a bien son étiquett
 
 - Lancer `demarrer.bat` une fois pour de vrai : c'est la seule étape non vérifiée.
 - Faire tourner `escape_game` contre Haiku et regarder son taux de rejet (voir session 6).
+
+---
+
+## Session 8 — le premier vrai appel, et l'erreur 500
+
+Première génération lancée depuis l'interface. Résultat à l'écran :
+
+```
+Erreur réseau : Unexpected token 'I', "Internal S"... is not valid JSON
+```
+
+Message parfaitement inutile, et pour un projet dont la thèse est *une erreur explicite vaut
+mieux qu'un contenu plausible*, c'est gênant. Deux défauts empilés.
+
+### Défaut 1 — l'exception du SDK n'était attrapée par personne
+
+`api.py` attrapait `FormatInconnu`, `FixtureIntrouvable` et `GenerationEchouee`. Pas
+`anthropic.AuthenticationError`. Elle remontait jusqu'à FastAPI, qui répondait `500 Internal
+Server Error` **en texte brut**.
+
+Reproduit en trente secondes avec une clé bidon :
+
+```
+anthropic.AuthenticationError: Error code: 401 - API key is invalid.
+```
+
+La correction est une traduction, placée dans `modele.appeler()` — le seul endroit du projet
+qui connaît Anthropic. Au-delà, plus personne ne voit le SDK : le reste du code ne reçoit
+qu'`AppelModeleEchoue`, dont le message est rédigé pour être affiché tel quel. La chaîne va
+du plus précis au plus général, comme le recommande la documentation du SDK : un
+`except APIStatusError` unique perdrait la différence entre une clé refusée (à corriger) et
+une surcharge passagère (à réessayer).
+
+Le cas le plus intéressant : **crédit épuisé et requête malformée arrivent tous les deux en
+400.** Seul le texte les sépare. C'est pourtant la panne la plus probable pour quelqu'un qui
+vient de créer sa clé, et « requête invalide » ne lui dit pas quoi faire.
+
+Côté HTTP, 502 et non 500 : l'application n'est pas cassée, c'est le service en amont qui n'a
+pas répondu. Même raisonnement que le 422 de la validation — le code de retour dit *qui* a
+échoué.
+
+### Défaut 2 — le navigateur supposait du JSON
+
+```js
+const resultat = await reponse.json();   // échoue sur le « I » de « Internal »
+```
+
+L'échec du parsing tombait dans le `catch` prévu pour le réseau, d'où le « Erreur réseau »
+mensonger : le réseau allait très bien. Maintenant on lit le texte **puis** on tente le JSON,
+et si ça échoue on affiche le code HTTP et le début de la réponse.
+
+Ce défaut est le plus instructif des deux. Le back-end renvoyait déjà l'information — le
+front la jetait. **Une erreur bien construite ne sert à rien si la dernière couche la remplace
+par la sienne.**
+
+### Les accents
+
+Mes messages sortaient en « Cle d'API refusee », affiché en rouge sous le formulaire. Le
+`CLAUDE.md` dit qu'un texte sans accents trahit du travail à la va-vite et que ça se voit à
+l'écran — il a raison, ça se voyait. Je les ai accentués, **et les trois messages d'erreur qui
+existaient déjà dans `api.py` et étaient restés sans accents**, sinon la moitié de l'interface
+aurait été dans un français et l'autre moitié dans un autre.
+
+Un test de plus, calqué sur ceux du catalogue et des gabarits : tout motif affiché doit
+contenir au moins un accent.
+
+### Ce que je retiens
+
+Les erreurs que le code prévoit sont toujours bien traitées — ce sont les autres qui arrivent
+en production. Ici tout un chemin, l'appel réseau lui-même, n'avait aucune gestion d'erreur,
+parce que les tests simulaient le modèle et ne le voyaient jamais échouer **pour une raison
+extérieure au contenu**. Mes simulations couvraient « le modèle répond mal », jamais « le
+modèle ne répond pas ».
+
+### Vérifications faites
+
+162 tests, dont 19 contre Postgres. Onze nouveaux : un par cause d'erreur, la distinction
+crédit épuisé / requête invalide, la garantie que `FixtureIntrouvable` n'est pas traduite au
+passage (sinon le mode démonstration passerait de 503 à 502 avec un motif faux), le chemin
+HTTP complet, et l'accentuation.
+
+Vérifié aussi hors tests, parce qu'un message d'erreur ne se juge qu'à l'écran : application
+lancée avec une clé invalide, formulaire rempli au navigateur, message lu en rouge sous le
+bouton. `Clé d'API refusée par Anthropic. Vérifie la ligne ANTHROPIC_API_KEY du fichier .env,
+puis redémarre l'application.`
+
+### Reste à faire
+
+- Toujours pas de génération réussie de bout en bout : il faut une clé valide avec du crédit.
+  C'est la prochaine étape, et elle conditionne le taux de rejet d'`escape_game`.
+- `rechargerFormats()` fait encore un `reponse.json()` direct. Moins grave — un échec y laisse
+  la liste inchangée — mais c'est la même faute.

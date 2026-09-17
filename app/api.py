@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from app.config import reglages
 from app.db import obtenir_session
 from app.generateur import GenerationEchouee
+from app.modele import AppelModeleEchoue
 from app.modeles import Jeu
 from app.requetes import (
     lister_formats,
@@ -99,9 +100,9 @@ def _verifier_code(fourni: str | None) -> None:
     if not attendu:
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
-            "Generation desactivee : cette instance appelle un modele facture "
+            "Génération désactivée : cette instance appelle un modèle facturé "
             "mais n'a pas de CODE_GENERATION. Renseigne-le, ou passe en "
-            "MODE_MODELE=rejeu pour une demonstration sans cout.",
+            "MODE_MODELE=rejeu pour une démonstration sans coût.",
         )
 
     # compare_digest plutot que « != » : la comparaison ne s'arrete pas au
@@ -110,7 +111,7 @@ def _verifier_code(fourni: str | None) -> None:
     if not secrets.compare_digest(fourni or "", attendu):
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
-            "La generation est protegee par un code sur cette instance.",
+            "La génération est protégée par un code sur cette instance.",
         )
 
 
@@ -151,10 +152,16 @@ def creer_jeu(
         # qu'un visiteur saisit un theme inedit.
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
-            "Cette instance fonctionne en mode demonstration : elle rejoue des "
-            "generations deja realisees. Choisis un theme deja present dans la "
-            "liste des jeux enregistres.",
+            "Cette instance fonctionne en mode démonstration : elle rejoue des "
+            "générations déjà réalisées. Choisis un thème déjà présent dans la "
+            "liste des jeux enregistrés.",
         )
+    except AppelModeleEchoue as erreur:
+        # 502 et non 500 : ce n'est pas l'application qui est cassee, c'est
+        # le service en amont qui n'a pas repondu. Et surtout, le motif part
+        # en JSON jusqu'a l'ecran : une cle refusee ou un credit epuise se
+        # corrige en trente secondes quand on sait lequel des deux c'est.
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(erreur))
     except GenerationEchouee as erreur:
         # 422 et non 500 : ce n'est pas un bug, c'est la validation qui a
         # fait son travail et refuse de livrer du contenu non verifie.
