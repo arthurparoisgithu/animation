@@ -3,14 +3,22 @@
 {% block contenu %}
 <div class="page">
   <header class="principal">
-    <h1>Générateur de jeux d'animation</h1>
+    <h1>Générateur de jeux <span class="suite">d'animation</span></h1>
     <nav>
       <a href="/metriques">Taux de rejet</a>
       <a href="/docs">API</a>
     </nav>
   </header>
 
-  <h2>1. Filtrer le catalogue</h2>
+  <section class="hero">
+    <h2>Quel jeu pour ce soir&nbsp;?</h2>
+    <p>
+      Choisis un format, donne un thème&nbsp;: l'application écrit le jeu,
+      vérifie chaque item et n'affiche que ceux qui passent.
+    </p>
+  </section>
+
+  <h2><span class="num">1</span> Filtrer le catalogue</h2>
   <div class="carte">
     <div class="ligne">
       <div>
@@ -37,7 +45,7 @@
     </div>
   </div>
 
-  <h2>2. Choisir un format</h2>
+  <h2><span class="num">2</span> Choisir un format</h2>
   <div class="grille" id="formats">
     {% for format in formats %}
     <button type="button" class="carte format" data-code="{{ format.code }}"
@@ -53,7 +61,7 @@
     {% endfor %}
   </div>
 
-  <h2>3. Générer</h2>
+  <h2><span class="num">3</span> Générer</h2>
   <form class="carte" id="formulaire">
     <div class="ligne">
       <div>
@@ -76,7 +84,7 @@
         <input id="code" name="code" type="password">
       </div>
       {% endif %}
-      <div style="flex: 0 0 auto">
+      <div class="bouton-ligne">
         <button type="submit" class="action" id="lancer" disabled>Générer</button>
       </div>
     </div>
