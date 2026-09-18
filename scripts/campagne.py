@@ -24,6 +24,7 @@ import sys
 
 from app import modele
 from app.catalogue import CATALOGUE
+from app.config import reglages
 from app.generateur import GenerationEchouee
 from app.schemas import Public
 from app.transport import DOSSIER_FIXTURES, FixtureIntrouvable, construire
@@ -50,6 +51,21 @@ NB_ITEMS = 6
 
 def lancer(*, enregistrer: bool, avec_base: bool) -> int:
     mode = "enregistrement" if enregistrer else "rejeu"
+
+    # La cle manquante est le premier obstacle de quiconque clone le depot.
+    # On le dit ici, avant d'annoncer le premier format : sinon l'erreur
+    # remonte au milieu de la boucle sous forme de trace d'appels, ce qui
+    # ressemble a un bug alors que c'est une configuration a completer.
+    if enregistrer and not reglages().anthropic_api_key:
+        print(
+            "ANTHROPIC_API_KEY absente : l'enregistrement appelle vraiment le "
+            "modele et ne peut pas demarrer sans elle.\n"
+            "  cp .env.example .env    puis renseigner la cle\n"
+            "Le rejeu, lui, ne demande aucune cle : "
+            "python -m scripts.campagne --rejouer",
+            file=sys.stderr,
+        )
+        return 1
 
     # Un dossier de fixtures vide n'est pas une erreur : c'est l'etat du
     # projet tant qu'aucune campagne n'a tourne. On sort proprement pour
